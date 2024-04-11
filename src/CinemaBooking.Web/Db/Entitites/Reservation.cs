@@ -1,11 +1,13 @@
 ﻿namespace CinemaBooking.Web.Db.Entitites;
 
-internal class Revervation
+public class Reservation
 {
-    public int ReservationId { get; set; }
+    public Guid Id { get; set; }
     public required string Name { get; set; }
     public required string Surname{ get; set; }
     public required string PhoneNumber { get; set; }
-    public required Seat Seat { get; set; }
-    public required Screening Screening { get; set; }
+    public virtual required Seat Seat { get; set; }
+    public required Guid SeatId { get; set; }
+    public virtual required Screening Screening { get; set; }
+    public Guid ScreeningId { get; set; }
 }

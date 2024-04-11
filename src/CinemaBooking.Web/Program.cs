@@ -21,7 +21,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-await app.Services.CreateAndFillDbAsync();
+await app.Services.CreateAndMigrateDbAsync();
 
 app.UseHttpsRedirection();
 
