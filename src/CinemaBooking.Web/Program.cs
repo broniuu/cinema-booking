@@ -21,7 +21,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-await app.Services.CreateAndMigrateDbAsync();
+await app.MigrateDbAsync();
+await app.FillInDatabaseAsync(app.Logger);
 
 app.UseHttpsRedirection();
 
