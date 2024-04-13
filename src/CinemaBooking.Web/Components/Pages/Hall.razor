@@ -1,0 +1,17 @@
+﻿@page "/hall"
+@using System.Text.Json
+@inject IDbContextFactory<CinemaDbContext> DbFactory
+
+<div>
+    Hall
+</div>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var dbContext = await DbFactory.CreateDbContextAsync();
+        var hall = dbContext.Halls.Include(h => h.Seats).FirstOrDefault();
+        var seatForView = hall?.Seats.Select(s => s.CreateForView());
+    }
+}

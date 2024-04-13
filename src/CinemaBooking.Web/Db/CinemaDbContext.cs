@@ -3,20 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.Db;
 
-public class CinemaDbContext : DbContext
+public class CinemaDbContext(DbContextOptions<CinemaDbContext> options) : DbContext(options)
 {
     public DbSet<Hall> Halls => Set<Hall>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
     public DbSet<Screening> Screenings => Set<Screening>();
     public DbSet<Seat> Seats => Set<Seat>();
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        string dbPathDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CinemaBooking");
-        Directory.CreateDirectory(dbPathDirectoryPath);
-        var dbPath = Path.Combine(dbPathDirectoryPath, "cinemaBookingData.db");
-        optionsBuilder.UseSqlite($"Data Source={dbPath};");
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
