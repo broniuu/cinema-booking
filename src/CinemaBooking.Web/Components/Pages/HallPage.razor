@@ -13,19 +13,33 @@
         <div class="d-flex flex-row gap-1">
             @foreach (var seat in seatRow.Seats)
             {
-                <div class="border border-dark border-1 align-content-center text-center" style="height: 50px; width: 50px">
+                <div class="seat" style="@GetStyleForSeat(seat)" onclick="document.getElementById('my-dialog').showModal()">
                     @seat.SeatNumber
+                    <div>
+                        @if (seat.IsForDisabled)
+                        {
+                            <i class="fa-solid fa-wheelchair"></i>
+                        }
+                    </div>
                 </div>
             }
         </div>
     }
 </div>
 
+<dialog id="my-dialog">
+    <p>Hi there!</p>
+
+    <form method="dialog">
+        <button>Close</button>
+    </form>
+</dialog>
+
 @code {
     [Parameter]
     public Guid HallId { get; set; }
 
-    private HallForView? hallForView;
+    HallForView? hallForView;
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,4 +53,7 @@
             }
         );
     }
+
+    string GetStyleForSeat(SeatForView seatForView) =>
+        $"height: 50px; width: 50px;";
 }
