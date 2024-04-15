@@ -4,7 +4,7 @@ using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentAssertions;
 
 namespace CinemaBooking.Web.UnitTests.Services;
-public class HallViewServiceGetTest
+public class HallViewServiceGetTest : IDisposable
 {
     private readonly InMemorySqliteProvider _sqliteProvider;
 
@@ -17,7 +17,7 @@ public class HallViewServiceGetTest
 
 
     [Fact]
-    public async Task WhenHallNotExists_ThenThrowException()
+    public async Task WhenHallNotExists_ThenReturnFaulted()
     {
         var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(
@@ -187,4 +187,6 @@ public class HallViewServiceGetTest
             o => o.ExcludingMissingMembers()
             );
     }
+
+    public void Dispose() => _sqliteProvider.DisposeConnection();
 }

@@ -1,3 +1,5 @@
+using Blazored.Toast;
+using CinemaBooking.Web;
 using CinemaBooking.Web.Components;
 using CinemaBooking.Web.Db;
 using Microsoft.EntityFrameworkCore;
@@ -11,13 +13,15 @@ builder.Logging.AddConsole();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddDbContextFactory<CinemaDbContext>(o =>
-{
-    string dbPathDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CinemaBooking");
-    Directory.CreateDirectory(dbPathDirectoryPath);
-    var dbPath = Path.Combine(dbPathDirectoryPath, "cinemaBookingData.db");
-    o.UseSqlite($"Data Source={dbPath};");
-});
+builder.Services.AddCinemaManagementServices()
+    .AddBlazoredToast()
+    .AddDbContextFactory<CinemaDbContext>(o =>
+    {
+        string dbPathDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CinemaBooking");
+        Directory.CreateDirectory(dbPathDirectoryPath);
+        var dbPath = Path.Combine(dbPathDirectoryPath, "cinemaBookingData.db");
+        o.UseSqlite($"Data Source={dbPath};");
+    });
 
 var app = builder.Build();
 

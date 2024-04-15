@@ -1,0 +1,42 @@
+﻿@page "/hall/{hallId:guid}"
+@using System.Text.Json
+@using CinemaBooking.Web.Dtos
+@using CinemaBooking.Web.Services
+
+@inject IDbContextFactory<CinemaDbContext> DbFactory
+@inject HallViewService HallViewService
+@inject IToastService ToastService
+
+<div class="d-flex flex-column vh-100 gap-1">
+    @foreach (var seatRow in hallForView?.SeatsRows ?? [])
+    {
+        <div class="d-flex flex-row gap-1">
+            @foreach (var seat in seatRow.Seats)
+            {
+                <div class="border border-dark border-1 align-content-center text-center" style="height: 50px; width: 50px">
+                    @seat.SeatNumber
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid HallId { get; set; }
+
+    private HallForView? hallForView;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var hallForViewResult = await HallViewService.GetHallViewAsync(HallId);
+        hallForView = hallForViewResult.Match(
+            h => h,
+            e =>
+            {
+                ToastService.ShowError("Error");
+                return default!;
+            }
+        );
+    }
+}
