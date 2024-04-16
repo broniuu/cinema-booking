@@ -8,5 +8,6 @@ public class Seat
     public required string SeatNumber { get; set; }
     public virtual required Hall Hall { get; set; }
     public virtual required Guid HallId { get; set; }
+    public bool IsForDisabled { get; set; }
     public virtual Reservation? Reservation { get; set; }
 }

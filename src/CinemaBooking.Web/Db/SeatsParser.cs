@@ -10,20 +10,22 @@ internal class SeatsParser
     {
         using var parser = new TextFieldParser(csvFilePath);
         parser.TextFieldType = FieldType.Delimited;
-        parser.SetDelimiters(";");
-        for (var rowNumber = 1; !parser.EndOfData;  ++rowNumber)
+        parser.SetDelimiters("\t");
+        for (var rowNumber = 1; !parser.EndOfData; ++rowNumber)
         {
             //Process row
             var fields = parser.ReadFields();
             var columnNumber = 1;
             foreach (var field in fields ?? Enumerable.Empty<string>())
             {
-                if (field.Equals("E"))
+                if (field.Equals(""))
                 {
                     ++columnNumber;
                     continue;
                 }
-                if (!int.TryParse(field, out _))
+                var isForDisabled = field.EndsWith('d');
+                var fieldValidatedForDisabled = isForDisabled ? field[..^1] : field;
+                if (!int.TryParse(fieldValidatedForDisabled, out _))
                 {
                     throw new SeatsParsingException($"field contains wrong data: \"{field}\"");
                 }
@@ -33,10 +35,11 @@ internal class SeatsParser
                     PositionX = columnNumber,
                     PositionY = rowNumber,
                     SeatNumber = field,
+                    IsForDisabled = isForDisabled,
                 };
                 yield return seat;
                 ++columnNumber;
             }
         }
-    } 
+    }
 }

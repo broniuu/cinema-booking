@@ -11,4 +11,5 @@ public class SeatFromParsingDto
     public int PositionX { get; set; }
     public int PositionY { get; set; }
     public required string SeatNumber { get; set; }
+    public bool IsForDisabled { get; set; }
 }

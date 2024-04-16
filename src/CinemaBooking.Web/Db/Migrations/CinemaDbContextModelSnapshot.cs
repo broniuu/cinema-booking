@@ -98,6 +98,9 @@ namespace CinemaBooking.Web.Migrations
                     b.Property<Guid>("HallId")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsForDisabled")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("PositionX")
                         .HasColumnType("INTEGER");
 

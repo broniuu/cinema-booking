@@ -13,6 +13,7 @@ public static class SeatFromParsingDtoExtensions
             Id = dto.Id,
             PositionX = dto.PositionX,
             PositionY = dto.PositionY,
-            SeatNumber = dto.SeatNumber
+            SeatNumber = dto.SeatNumber,
+            IsForDisabled = dto.IsForDisabled,
         };
 }

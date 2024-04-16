@@ -1,0 +1,26 @@
+﻿.seat {
+    width: 50px;
+    height: 50px;
+    position: relative;
+    text-align: center;
+    background-color: #005586;
+    color: white;
+    align-content: center;
+    cursor: pointer;
+}
+.seat div{
+    font-size: 12px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 0 4px 0 4px;
+    
+}
+
+.seat + .free {
+    background-color: #005586;
+}
+
+.seat + .booked {
+    background-color: #808080;
+}
