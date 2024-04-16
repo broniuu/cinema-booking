@@ -2,10 +2,11 @@
 
 public class Screening
 {
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; } = Guid.NewGuid();
     public required string Name { get; set; }
     public DateTimeOffset Date { get; set; }
     public List<Reservation> Reservations { get; set; } = [];
-    public required Hall Hall { get; set; }
-    public Guid HallId { get; set; }
+    public virtual Hall Hall { get; set; } = null!;
+    public required Guid HallId { get; set; }
 }
+

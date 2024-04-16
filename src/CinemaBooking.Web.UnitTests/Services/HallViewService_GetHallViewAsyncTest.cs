@@ -4,11 +4,11 @@ using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentAssertions;
 
 namespace CinemaBooking.Web.UnitTests.Services;
-public class HallViewServiceGetTest : IDisposable
+public class HallViewService_GetHallViewAsyncTest : IDisposable
 {
     private readonly InMemorySqliteProvider _sqliteProvider;
 
-    public HallViewServiceGetTest()
+    public HallViewService_GetHallViewAsyncTest()
     {
         _sqliteProvider = new InMemorySqliteProvider();
         _sqliteProvider.InitializeConnection();

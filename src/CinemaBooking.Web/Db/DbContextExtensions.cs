@@ -2,9 +2,6 @@
 using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Mappers;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Reflection;
-using System.Text.Json;
 
 namespace CinemaBooking.Web.Db;
 
@@ -37,7 +34,7 @@ internal static class DbContextExtensions
             var hall = await dbContext.Halls.FirstOrDefaultAsync();
             if (hall is null)
             {
-                hall = new Hall() { Name = "MCK Bobowa" };
+                hall = new Hall() { Name = "MCK Bobowa", Id = Guid.Parse("865f86e6-5a3d-4fbf-970f-98f8f15484f3") };
                 await dbContext.Halls.AddAsync(hall);
             }
             if (!await dbContext.Seats.AnyAsync())

@@ -7,6 +7,7 @@ public static class Config
 {
     public static IServiceCollection AddCinemaManagementServices(this IServiceCollection services)
     {
-        return services.AddScoped<HallViewService>();
+        return services.AddScoped<HallViewService>()
+            .AddScoped<ScreeningService>();
     }
 }
