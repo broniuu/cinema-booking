@@ -6,6 +6,7 @@
     background-color: #005586;
     color: white;
     align-content: center;
+    cursor: pointer;
 }
 .seat div{
     font-size: 12px;

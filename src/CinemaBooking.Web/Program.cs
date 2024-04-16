@@ -4,6 +4,7 @@ using CinemaBooking.Web.Components;
 using CinemaBooking.Web.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -15,6 +16,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddCinemaManagementServices()
     .AddBlazoredToast()
+    .AddRadzenComponents()
     .AddDbContextFactory<CinemaDbContext>(o =>
     {
         string dbPathDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CinemaBooking");

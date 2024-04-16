@@ -1,4 +1,5 @@
 ﻿@page "/hall/{hallId:guid}"
+
 @using System.Text.Json
 @using CinemaBooking.Web.Dtos
 @using CinemaBooking.Web.Services
@@ -6,6 +7,7 @@
 @inject IDbContextFactory<CinemaDbContext> DbFactory
 @inject HallViewService HallViewService
 @inject IToastService ToastService
+@inject DialogService DialogService
 
 <div class="d-flex flex-column vh-100 gap-1">
     @foreach (var seatRow in hallForView?.SeatsRows ?? [])
@@ -13,7 +15,7 @@
         <div class="d-flex flex-row gap-1">
             @foreach (var seat in seatRow.Seats)
             {
-                <div class="seat" style="@GetStyleForSeat(seat)" onclick="document.getElementById('my-dialog').showModal()">
+                <div class="seat" style="@GetStyleForSeat(seat)" @onclick="() => OpenReservationDialogAsync(seat)">
                     @seat.SeatNumber
                     <div>
                         @if (seat.IsForDisabled)
@@ -27,13 +29,7 @@
     }
 </div>
 
-<dialog id="my-dialog">
-    <p>Hi there!</p>
-
-    <form method="dialog">
-        <button>Close</button>
-    </form>
-</dialog>
+<RadzenButton>Button</RadzenButton>
 
 @code {
     [Parameter]
@@ -53,6 +49,12 @@
             }
         );
     }
+
+    Task OpenReservationDialogAsync(SeatForView seat) =>
+        DialogService.OpenAsync<AddReservationDialog>(
+            "Add reservation", 
+            new Dictionary<string, object>() {["Seat"] = seat},
+            new DialogOptions() { Width = "700px", Height = "500px", Resizable = true, Draggable = true });
 
     string GetStyleForSeat(SeatForView seatForView) =>
         $"height: 50px; width: 50px;";
