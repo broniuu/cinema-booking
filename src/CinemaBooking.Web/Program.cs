@@ -17,14 +17,9 @@ builder.Services.AddRazorComponents()
 builder.Services.AddCinemaManagementServices()
     .AddBlazoredToast()
     .AddRadzenComponents()
-    .AddDbContextFactory<CinemaDbContext>(o =>
-    {
-        string dbPathDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CinemaBooking");
-        Directory.CreateDirectory(dbPathDirectoryPath);
-        var dbPath = Path.Combine(dbPathDirectoryPath, "cinemaBookingData.db");
-        o.UseSqlite($"Data Source={dbPath};");
-    });
-
+    .AddSingleton(TimeProvider.System)
+    .AddValidators()
+    .AddDbContextFactory();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

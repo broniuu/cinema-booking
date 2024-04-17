@@ -2,6 +2,8 @@
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentAssertions;
+using FluentValidation;
+using FluentValidation.Results;
 using System.Globalization;
 using Xunit.Sdk;
 
@@ -60,7 +62,9 @@ public class ScreeningService_GetAllAsyncTest : IDisposable
             },
             ]);
         await dbContext.SaveChangesAsync();
-        var screeningService = new ScreeningService(SqliteProvider.CreateDbContextFactory());
+        var validator = Substitute.For<IValidator<Screening>>();
+        var guidService = new GuidService();
+        var screeningService = new ScreeningService(SqliteProvider.CreateDbContextFactory(), validator, guidService);
         var screeningsForView = await screeningService.GetAllAsync();
         screeningsForView.Should().BeEquivalentTo(
             [
