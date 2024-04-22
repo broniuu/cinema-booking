@@ -1,11 +1,8 @@
-﻿using CinemaBooking.Web.Db;
-using CinemaBooking.Web.Db.Entitites;
-using CinemaBooking.Web.Dtos;
+﻿using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentValidation;
 using FluentValidation.Results;
-using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.UnitTests.Services;
 public class ScreeningService_AddAsyncTest
@@ -26,22 +23,21 @@ public class ScreeningService_AddAsyncTest
         var validator = Substitute.For<IValidator<Screening>>();
         validator.ValidateAsync(Arg.Any<Screening>())
             .Returns(new ValidationResult(new List<ValidationFailure>()));
-        var guidService = Substitute.For<GuidService>();
-        guidService.NewGuid().Returns(Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"));
-        var sut = new ScreeningService(dbContextFactory, validator, guidService);
+        var sut = new ScreeningService(dbContextFactory, validator);
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
             Id = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
             Name = "MCK"
         });
-        var fakeScreening = new AddScreeningDto()
+        await dbContext.SaveChangesAsync();
+        var fakeScreening = new Screening()
         {
+            Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
             HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
             Name = "test screening",
             Date = DateTimeOffset.Parse("2023-06-04"),
         };
-        await dbContext.SaveChangesAsync();
         //When
         var addedScreening = await sut.AddAsync(fakeScreening);
         //Then
@@ -87,10 +83,9 @@ public class ScreeningService_AddAsyncTest
         var dbContextFactory = _sqliteProvider.CreateDbContextFactory();
         var validator = Substitute.For<IValidator<Screening>>();
         // Setup failure
-        validator.ValidateAsync(Arg.Any<Screening>()).Returns(new ValidationResult(new List<ValidationFailure>() { new() }));
-        var guidService = Substitute.For<GuidService>();
-        guidService.NewGuid().Returns(Guid.Empty);
-        var screeningService = new ScreeningService(dbContextFactory, validator, guidService);
+        validator.ValidateAsync(Arg.Any<Screening>())
+            .Returns(new ValidationResult(new List<ValidationFailure>() { new("", "first error message"), new("", "second error message") }));
+        var screeningService = new ScreeningService(dbContextFactory, validator);
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
@@ -98,8 +93,9 @@ public class ScreeningService_AddAsyncTest
             Name = "MCK"
         });
         await dbContext.SaveChangesAsync();
-        var fakeScreening = new AddScreeningDto()
+        var fakeScreening = new Screening()
         {
+            Id = Guid.Empty,
             HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
             Name = "test screening",
             Date = DateTimeOffset.Parse("2023-06-04"),
@@ -107,6 +103,7 @@ public class ScreeningService_AddAsyncTest
         // When
         var addedScreening = await screeningService.AddAsync(fakeScreening);
         // Then
+        addedScreening.IfFail(e => e.Message.Should().Be("first error message"));
         addedScreening.Match(s => s, _ => null).Should().BeNull();
         dbContext.Screenings.Should().BeEquivalentTo(Array.Empty<object>());
         await validator.Received(1).ValidateAsync(Arg.Is<Screening>(

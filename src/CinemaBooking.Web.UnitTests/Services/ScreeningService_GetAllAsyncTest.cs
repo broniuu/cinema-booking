@@ -63,8 +63,7 @@ public class ScreeningService_GetAllAsyncTest : IDisposable
             ]);
         await dbContext.SaveChangesAsync();
         var validator = Substitute.For<IValidator<Screening>>();
-        var guidService = new GuidService();
-        var screeningService = new ScreeningService(SqliteProvider.CreateDbContextFactory(), validator, guidService);
+        var screeningService = new ScreeningService(SqliteProvider.CreateDbContextFactory(), validator);
         var screeningsForView = await screeningService.GetAllAsync();
         screeningsForView.Should().BeEquivalentTo(
             [

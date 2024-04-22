@@ -8,29 +8,42 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.Services;
 
-public class ScreeningService(IDbContextFactory<CinemaDbContext> dbContextFactory, IValidator<Screening> screeningValidator, GuidService guidService)
+public class ScreeningService(IDbContextFactory<CinemaDbContext> dbContextFactory, IValidator<Screening> validator)
 {
     private readonly IDbContextFactory<CinemaDbContext> _dbContextFactory = dbContextFactory;
-    private readonly IValidator<Screening> _screeningValidator = screeningValidator;
-    private readonly GuidService _guidService = guidService;
+    private readonly IValidator<Screening> _validator = validator;
 
-    public async Task<List<ScreeningForView>> GetAllAsync()
+    public async Task<List<Screening>> GetAllAsync()
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        return await dbContext.Screenings.Select(s => s.CreateForView()).ToListAsync();
+        return await dbContext.Screenings.ToListAsync();
     }
 
-    public async Task<Result<ScreeningForView?>> AddAsync(AddScreeningDto addScreeningDto)
+    public async Task<Result<Screening?>> AddAsync(Screening screeningToAdd)
     {
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var entityToAdd = addScreeningDto.CreateEntity(_guidService);
-        var validationResult = await _screeningValidator.ValidateAsync(entityToAdd);
+        var validationResult = await _validator.ValidateAsync(screeningToAdd);
         if (!validationResult.IsValid)
         {
-            return new Result<ScreeningForView?>(new ValidationException(validationResult.Errors));
+            var errorMessage = validationResult.Errors.First().ErrorMessage;
+            return new Result<Screening?>(new Exception(errorMessage));
         }
-        await dbContext.Screenings.AddAsync(entityToAdd);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var addedScreeningEntry = await dbContext.Screenings.AddAsync(screeningToAdd);
         await dbContext.SaveChangesAsync();
-        return entityToAdd.CreateForView();
+        return addedScreeningEntry.Entity;
+    }
+
+    public async Task<Result<Screening?>> UpdateAsync(Screening screeningToUpdate)
+    {
+        var validationResult = await _validator.ValidateAsync(screeningToUpdate);
+        if (!validationResult.IsValid)
+        {
+            var errorMessage = validationResult.Errors.First().ErrorMessage;
+            return new Result<Screening?>(new Exception(errorMessage));
+        }
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        dbContext.Entry(screeningToUpdate).State = EntityState.Modified;
+        await dbContext.SaveChangesAsync();
+        return screeningToUpdate;
     }
 }

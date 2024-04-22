@@ -1,4 +1,5 @@
 ﻿@page "/screenings"
+@using CinemaBooking.Web.Db.Entitites
 @inject ScreeningService ScreeningService
 
 <h3>ScreeningsPage</h3>
@@ -21,7 +22,7 @@
 </RadzenCard>
 
 @code {
-    List<ScreeningForView> screenings;
+    List<Screening> screenings;
 
     protected override async Task OnInitializedAsync()
     {
