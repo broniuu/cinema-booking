@@ -5,7 +5,7 @@ using FluentValidation;
 using FluentValidation.Results;
 
 namespace CinemaBooking.Web.UnitTests.Services;
-public class ScreeningService_AddAsyncTest
+public sealed class ScreeningService_AddAsyncTest : IDisposable
 {
     private readonly InMemorySqliteProvider _sqliteProvider;
 
@@ -115,5 +115,10 @@ public class ScreeningService_AddAsyncTest
                 Name = "test screening"
             })), default
         );
+    }
+
+    public void Dispose()
+    {
+        _sqliteProvider.DisposeConnection();
     }
 }
