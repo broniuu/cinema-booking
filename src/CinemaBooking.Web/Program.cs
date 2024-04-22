@@ -2,8 +2,6 @@ using Blazored.Toast;
 using CinemaBooking.Web;
 using CinemaBooking.Web.Components;
 using CinemaBooking.Web.Db;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);

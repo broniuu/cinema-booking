@@ -27,10 +27,10 @@ public class ScreeningService(IDbContextFactory<CinemaDbContext> dbContextFactor
         var validationResult = await _screeningValidator.ValidateAsync(entityToAdd);
         if (!validationResult.IsValid)
         {
-            return new Result<ScreeningForView?>(new Exception());
+            return new Result<ScreeningForView?>(new ValidationException(validationResult.Errors));
         }
-        var addedScreening = await dbContext.Screenings.AddAsync(entityToAdd);
+        await dbContext.Screenings.AddAsync(entityToAdd);
         await dbContext.SaveChangesAsync();
-        return addedScreening.Entity.CreateForView();
+        return entityToAdd.CreateForView();
     }
 }
