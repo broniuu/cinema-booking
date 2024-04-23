@@ -48,10 +48,4 @@ public sealed class ScreeningService_DeleteAsyncTest : IDisposable
         //Then
         dbContext.Screenings.Should().BeEquivalentTo(Enumerable.Empty<object>());
     }
-
-    private static bool IsEqual(Screening screening1, Screening screening2) =>
-        screening1.Id == screening2.Id
-        && screening1.Name == screening2.Name
-        && screening1.Date == screening2.Date
-        && screening1.HallId == screening2.HallId;
 }
