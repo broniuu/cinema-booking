@@ -46,4 +46,11 @@ public class ScreeningService(IDbContextFactory<CinemaDbContext> dbContextFactor
         await dbContext.SaveChangesAsync();
         return screeningToUpdate;
     }
+
+    public async Task RemoveAsync(Screening screening)
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        dbContext.Screenings.Remove(screening);
+        await dbContext.SaveChangesAsync();
+    }
 }
