@@ -1,6 +1,9 @@
 ﻿@page "/screenings"
 @using CinemaBooking.Web.Db.Entitites
+@using CinemaBooking.Web.Extensions
 @inject ScreeningService ScreeningService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
 
 <RadzenRow Style="height: 100%;">
     <RadzenColumn Size="3">
@@ -84,7 +87,13 @@
 
     async Task RemoveScreening(Screening screeningToRemove)
     {
+        var deleteScreening = await DialogService.Confirm("Are you sure, you wan't do delete this screening", "Delete Screening");
+        if (deleteScreening == false)
+        {
+            return;
+        }
         await ScreeningService.RemoveAsync(screeningToRemove);
         screenings?.Remove(screeningToRemove);
+        NotificationService.NotifySuccess("Deleted screening successfuly");
     }
 }

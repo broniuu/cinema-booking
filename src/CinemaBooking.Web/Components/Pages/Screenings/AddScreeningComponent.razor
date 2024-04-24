@@ -1,4 +1,5 @@
 ﻿@using CinemaBooking.Web.Db.Entitites
+@using CinemaBooking.Web.Extensions
 @inject HallService HallService
 @inject DialogService DialogService
 @inject ScreeningService ScreeningService
@@ -62,7 +63,7 @@
         var addedScreening = addedScreeningResult.Match(
             s =>
             {
-                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Success, Summary = "Succsfully added screening!" });
+                NotificationService.NotifySuccess("Succsfully added screening!");
                 addingScrening = false;
                 return s;
             },
