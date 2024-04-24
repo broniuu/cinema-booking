@@ -16,10 +16,10 @@
                                 <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-color-secondary">@(screening.Name)</RadzenText>
                                 <RadzenText TextStyle="TextStyle.Body1" TagName="TagName.H6" class="rz-color-secondary">@(screening.Date)</RadzenText>
                             </RadzenColumn>
-                            <RadzenColumn Class="rz-ripple remove-screening">
-                                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" class="h-100">
+                            <RadzenColumn Class="rz-ripple remove-screening" @onclick="() => RemoveScreening(screening)">
+                                <div class="h-100 d-flex justify-content-center align-items-center">
                                     <RadzenIcon Icon="@("<i class=\"fa-solid fa-trash\"></i>")" />
-                                </RadzenStack>
+                                </div>
                             </RadzenColumn>
                         </RadzenRow>
                     </RadzenCard>
@@ -80,5 +80,11 @@
             return;
         }
         screenings = await ScreeningService.GetAllAsync();
+    }
+
+    async Task RemoveScreening(Screening screeningToRemove)
+    {
+        await ScreeningService.RemoveAsync(screeningToRemove);
+        screenings?.Remove(screeningToRemove);
     }
 }
