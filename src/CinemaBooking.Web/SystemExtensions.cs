@@ -4,4 +4,7 @@ public static class SystemExtensions
 {
     public static IEnumerable<T> OrEmptyIfNull<T>(this IEnumerable<T>? source) =>
         source ?? []!;
+
+    public static DateOnly ToDateOnly(this DateTime date) => DateOnly.FromDateTime(date);
+    public static DateOnly ToDateOnly(this DateTimeOffset date) => DateOnly.FromDateTime(date.Date);
 }

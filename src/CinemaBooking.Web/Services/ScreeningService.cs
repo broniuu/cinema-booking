@@ -11,6 +11,7 @@ public class ScreeningService(IDbContextFactory<CinemaDbContext> dbContextFactor
     private readonly IDbContextFactory<CinemaDbContext> _dbContextFactory = dbContextFactory;
     private readonly IValidator<Screening> _validator = validator;
 
+    //Todo: Order by date
     public async Task<List<Screening>> GetAllAsync()
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();

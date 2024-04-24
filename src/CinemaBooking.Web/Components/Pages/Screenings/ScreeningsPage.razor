@@ -1,0 +1,52 @@
+﻿@page "/screenings"
+@using CinemaBooking.Web.Db.Entitites
+@inject ScreeningService ScreeningService
+
+<RadzenRow Style="height: 100%;">
+    <RadzenColumn Size="3">
+        <RadzenCard class="p-0" Style="height: 100%;">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-p-2">
+                <RadzenButton Text="Add Screening" />
+            </RadzenStack>
+            <RadzenDataList Data="@screenings" Class="screening-list" WrapItems="true">
+                <Template Context="screening">
+                    <RadzenCard Style="width: 100%; padding: 0;">
+                        <RadzenColumn Size="12" SizeLG="3" Class="rz-p-4 rz-ripple screening">
+                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-color-secondary">@(screening.Name)</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body1" TagName="TagName.H6" class="rz-color-secondary">@(screening.Date)</RadzenText>
+                        </RadzenColumn>
+                    </RadzenCard>
+                </Template>
+            </RadzenDataList>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn>
+        <RadzenCard class="p-0" Style="height: 100%;">
+
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+<style>
+    .screening {
+        min-height: 72px;
+        background-color: var(--rz-secondary-lighter);
+        cursor: pointer;
+    }
+
+    .screening-list {
+        height: 100%;
+        overflow-y: auto;
+    }
+</style>
+
+@code {
+    List<Screening>? screenings;
+    Screening? screeningToAdd;
+
+    protected override async Task OnInitializedAsync()
+    {
+        screenings = await ScreeningService.GetAllAsync();
+    }
+}

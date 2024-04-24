@@ -15,5 +15,5 @@ public class ScreeningValidator : AbstractValidator<Screening>
         RuleFor(s => s.Id).NotEmpty();
     }
 
-    private bool IsNow(DateTimeOffset date) => date.Date >= _timeProvider.GetLocalNow().Date;
+    private bool IsNow(DateOnly date) => date >= _timeProvider.GetLocalNow().ToDateOnly();
 }

@@ -39,7 +39,7 @@ public sealed class ScreeningService_DeleteAsyncTest : IDisposable
             Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
             HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
             Name = "test screening",
-            Date = DateTimeOffset.Parse("2023-06-04"),
+            Date = DateOnly.Parse("2023-06-04"),
         };
         await dbContext.Screenings.AddAsync(fakeScreening);
         await dbContext.SaveChangesAsync();

@@ -1,0 +1,15 @@
+﻿@if(addingScrening)
+{
+    
+} else
+{
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-p-2">
+        <RadzenButton Text="Add Screening" />
+    </RadzenStack>
+}
+
+@code {
+    bool addingScrening;
+    string name = string.Empty;
+    DateOnly date = DateTime.Now.ToDateOnly(); 
+}
