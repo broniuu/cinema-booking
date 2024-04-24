@@ -2,7 +2,7 @@
 
 <RadzenLayout>
     <NavMenu />
-    <RadzenBody Style="overflow: hidden; color: var(--rz-text-color)">
+    <RadzenBody class="body-view">
         @Body
     </RadzenBody>
 </RadzenLayout>
@@ -15,3 +15,9 @@
 
 <RadzenComponents />
 
+<style>
+    .body-view {
+        color: var(--rz-text-color);
+        --body-height: calc(100vh - var(--rz-header-min-height)); 
+    }
+</style>
