@@ -55,3 +55,7 @@ h1:focus {
 .rz-dialog-confirm-message {
     color: var(--rz-text-color);
 }
+
+.rz-dialog-alert-message {
+    color: var(--rz-text-color);
+}

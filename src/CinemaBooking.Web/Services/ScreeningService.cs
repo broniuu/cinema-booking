@@ -15,7 +15,7 @@ public class ScreeningService(IDbContextFactory<CinemaDbContext> dbContextFactor
     public async Task<List<Screening>> GetAllAsync()
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        return await dbContext.Screenings.ToListAsync();
+        return await dbContext.Screenings.OrderBy(s => s.Date).ToListAsync();
     }
 
     public async Task<Result<Screening?>> AddAsync(Screening screeningToAdd)

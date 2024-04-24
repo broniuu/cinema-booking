@@ -32,6 +32,12 @@ public class ScreeningService_GetAllAsyncTest : IDisposable
         };
         await dbContext.Halls.AddAsync(hall);
         dbContext.Screenings.AddRange([
+             new Screening() {
+                Name = "Fast and Furious",
+                Date = DateOnly.Parse("2025-03-15"),
+                HallId = hall.Id,
+                Id = Guid.Parse("4095989d-69b8-424f-b8a3-f46151744c21")
+            },
             new Screening() {
                 Name = "Lord of the rings",
                 Date = DateOnly.Parse("2025-03-11"),
@@ -39,10 +45,10 @@ public class ScreeningService_GetAllAsyncTest : IDisposable
                 Id = Guid.Parse("766d8862-bd3e-4199-ae8a-4a273369f6a3")
             },
             new Screening() {
-                Name = "Fast and Furious",
-                Date = DateOnly.Parse("2025-03-15"),
+                Name = "Dogs",
+                Date = DateOnly.Parse("2025-05-28"),
                 HallId = hall.Id,
-                Id = Guid.Parse("4095989d-69b8-424f-b8a3-f46151744c21")
+                Id = Guid.Parse("8989b12d-d9be-475f-8ad6-10f856abbcfe")
             },
             new Screening() {
                 Name = "Star Wars",
@@ -50,12 +56,7 @@ public class ScreeningService_GetAllAsyncTest : IDisposable
                 HallId = hall.Id,
                 Id = Guid.Parse("46fff3be-5e69-4c27-9418-fa8f1f4f53a4")
             },
-            new Screening() {
-                Name = "Dogs",
-                Date = DateOnly.Parse("2025-05-28"),
-                HallId = hall.Id,
-                Id = Guid.Parse("8989b12d-d9be-475f-8ad6-10f856abbcfe")
-            },
+
             ]);
         await dbContext.SaveChangesAsync();
         var validator = Substitute.For<IValidator<Screening>>();
@@ -88,5 +89,6 @@ public class ScreeningService_GetAllAsyncTest : IDisposable
                     Id = Guid.Parse("8989b12d-d9be-475f-8ad6-10f856abbcfe")
                 }
             ]);
+        screeningsForView.Should().BeInAscendingOrder(s => s.Date);
     }
 }

@@ -11,7 +11,7 @@ public class ScreeningValidator : AbstractValidator<Screening>
         _timeProvider = timeProvider;
         RuleFor(s => s.HallId).NotEmpty();
         RuleFor(s => s.Name).NotEmpty();
-        RuleFor(s => s.Date).Must(IsNow).WithMessage(s => $"Screening date: {s.Date:dd.mm.yyyy} can't be a past day");
+        RuleFor(s => s.Date).Must(IsNow).WithMessage(s => $"Screening date: {s.Date} can't be a past day");
         RuleFor(s => s.Id).NotEmpty();
     }
 
