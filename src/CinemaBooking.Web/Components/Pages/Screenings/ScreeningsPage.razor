@@ -5,16 +5,21 @@
 <RadzenRow Style="height: 100%;">
     <RadzenColumn Size="3">
         <RadzenCard class="p-0" Style="height: 100%;">
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-p-2">
-                <RadzenButton Text="Add Screening" />
-            </RadzenStack>
+            <AddScreeningComponent OnSaveScreening="HandleAddScreening" />
             <RadzenDataList Data="@screenings" Class="screening-list" WrapItems="true">
                 <Template Context="screening">
                     <RadzenCard Style="width: 100%; padding: 0;">
-                        <RadzenColumn Size="12" SizeLG="3" Class="rz-p-4 rz-ripple screening">
-                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-color-secondary">@(screening.Name)</RadzenText>
-                            <RadzenText TextStyle="TextStyle.Body1" TagName="TagName.H6" class="rz-color-secondary">@(screening.Date)</RadzenText>
-                        </RadzenColumn>
+                        <RadzenRow Gap="0">
+                            <RadzenColumn Size="10" Class="rz-p-4 rz-ripple screening">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-color-secondary">@(screening.Name)</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body1" TagName="TagName.H6" class="rz-color-secondary">@(screening.Date)</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn Class="rz-ripple remove-screening">
+                                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" class="h-100">
+                                    <RadzenIcon Icon="@("<i class=\"fa-solid fa-trash\"></i>")" />
+                                </RadzenStack>
+                            </RadzenColumn>
+                        </RadzenRow>
                     </RadzenCard>
                 </Template>
             </RadzenDataList>
@@ -35,6 +40,12 @@
         cursor: pointer;
     }
 
+    .remove-screening {
+        min-height: 72px;
+        background-color: var(--rz-danger-darker);
+        cursor: pointer;
+    }
+
     .screening-list {
         height: 100%;
         overflow-y: auto;
@@ -47,6 +58,15 @@
 
     protected override async Task OnInitializedAsync()
     {
+        screenings = await ScreeningService.GetAllAsync();
+    }
+
+    async Task HandleAddScreening(bool addScreeningScuccess)
+    {
+        if (!addScreeningScuccess)
+        {
+            return;
+        }
         screenings = await ScreeningService.GetAllAsync();
     }
 }

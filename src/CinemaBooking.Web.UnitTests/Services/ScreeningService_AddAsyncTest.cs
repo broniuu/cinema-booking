@@ -36,7 +36,7 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
             Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
             HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
             Name = "test screening",
-            Date = DateTimeOffset.Parse("2023-06-04"),
+            Date = DateOnly.Parse("2023-06-04"),
         };
         //When
         var addedScreening = await sut.AddAsync(fakeScreening);
@@ -46,7 +46,7 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
             {
                 HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
                 Name = "test screening",
-                Date = DateTimeOffset.Parse("2023-06-04"),
+                Date = DateOnly.Parse("2023-06-04"),
             }
         );
         dbContext.Screenings.Should().BeEquivalentTo(
@@ -55,7 +55,7 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
                 {
                     HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
                     Name = "test screening",
-                    Date = DateTimeOffset.Parse("2023-06-04"),
+                    Date = DateOnly.Parse("2023-06-04"),
                 }
             ]
         );
@@ -64,7 +64,7 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
             {
                 Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
                 HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
-                Date = DateTimeOffset.Parse("2023-06-04"),
+                Date = DateOnly.Parse("2023-06-04"),
                 Name = "test screening"
             })), default
         );
@@ -98,7 +98,7 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
             Id = Guid.Empty,
             HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
             Name = "test screening",
-            Date = DateTimeOffset.Parse("2023-06-04"),
+            Date = DateOnly.Parse("2023-06-04"),
         };
         // When
         var addedScreening = await screeningService.AddAsync(fakeScreening);
@@ -111,7 +111,7 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
             {
                 Id = Guid.Empty,
                 HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
-                Date = DateTimeOffset.Parse("2023-06-04"),
+                Date = DateOnly.Parse("2023-06-04"),
                 Name = "test screening"
             })), default
         );

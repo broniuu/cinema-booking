@@ -37,7 +37,7 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
             Id = Guid.Empty,
             HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
             Name = "test screening",
-            Date = DateTimeOffset.Parse("2023-06-04"),
+            Date = DateOnly.Parse("2023-06-04"),
         };
         // When
         var addedScreening = await screeningService.UpdateAsync(fakeScreening);
@@ -50,7 +50,7 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
             {
                 Id = Guid.Empty,
                 HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
-                Date = DateTimeOffset.Parse("2023-06-04"),
+                Date = DateOnly.Parse("2023-06-04"),
                 Name = "test screening"
             })), default
         );
@@ -76,12 +76,12 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
             Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
             HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
             Name = "test screening",
-            Date = DateTimeOffset.Parse("2023-06-04"),
+            Date = DateOnly.Parse("2023-06-04"),
         });
         await dbContext.SaveChangesAsync();
         var fakeScreeningToModify = await dbContext.Screenings.FindAsync(Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"));
         fakeScreeningToModify!.Name = "modified";
-        fakeScreeningToModify!.Date = DateTimeOffset.Parse("2022-01-04");
+        fakeScreeningToModify!.Date = DateOnly.Parse("2022-01-04");
         //When
         var addedScreening = await sut.UpdateAsync(fakeScreeningToModify);
         //Then
@@ -91,7 +91,7 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
                 Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
                 HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
                 Name = "modified",
-                Date = DateTimeOffset.Parse("2022-01-04"),
+                Date = DateOnly.Parse("2022-01-04"),
             }
         );
         dbContext.Screenings.Should().BeEquivalentTo(
@@ -101,7 +101,7 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
                     Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
                     HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
                     Name = "modified",
-                    Date = DateTimeOffset.Parse("2022-01-04"),
+                    Date = DateOnly.Parse("2022-01-04"),
                 }
             ]
         );
@@ -111,7 +111,7 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
                 Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
                 HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
                 Name = "modified",
-                Date = DateTimeOffset.Parse("2022-01-04"),
+                Date = DateOnly.Parse("2022-01-04"),
             })), default
         );
     }

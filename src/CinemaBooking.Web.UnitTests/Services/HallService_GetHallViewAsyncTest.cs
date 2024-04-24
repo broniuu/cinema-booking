@@ -1,14 +1,16 @@
-﻿using CinemaBooking.Web.Db.Entitites;
+﻿using Castle.Core.Logging;
+using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 
 namespace CinemaBooking.Web.UnitTests.Services;
-public class HallViewService_GetHallViewAsyncTest : IDisposable
+public class HallService_GetHallViewAsyncTest : IDisposable
 {
     private readonly InMemorySqliteProvider _sqliteProvider;
 
-    public HallViewService_GetHallViewAsyncTest()
+    public HallService_GetHallViewAsyncTest()
     {
         _sqliteProvider = new InMemorySqliteProvider();
         _sqliteProvider.InitializeConnection();
@@ -31,8 +33,10 @@ public class HallViewService_GetHallViewAsyncTest : IDisposable
 
         );
         await dbContext.SaveChangesAsync();
-        var hallViewService = new HallViewService(_sqliteProvider.CreateDbContextFactory());
+        var logger = Substitute.For<ILogger<HallService>>();
+        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger);
         var result = await hallViewService.GetHallViewAsync(Guid.Parse("85a91b48-b1d9-400b-b3ba-a96cbbaed499"));
+        logger.ReceivedLogError("Hall with Id: 85a91b48-b1d9-400b-b3ba-a96cbbaed499 doesn't exists");
         result.IsFaulted.Should().BeTrue();
     }
 
@@ -112,7 +116,7 @@ public class HallViewService_GetHallViewAsyncTest : IDisposable
             },
         ]);
         await dbContext.SaveChangesAsync();
-        var hallViewService = new HallViewService(_sqliteProvider.CreateDbContextFactory());
+        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), Substitute.For<ILogger<HallService>>());
         var result = await hallViewService.GetHallViewAsync(Guid.Parse("114b855e-7325-4b60-ade2-8bb83871751a"));
         var hallView = result.Match(hv => hv, e => default!);
         hallView.Should().BeEquivalentTo(

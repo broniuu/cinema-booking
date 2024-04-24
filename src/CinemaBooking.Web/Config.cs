@@ -11,7 +11,7 @@ namespace CinemaBooking.Web;
 public static class Config
 {
     public static IServiceCollection AddCinemaManagementServices(this IServiceCollection services) => services
-        .AddScoped<HallViewService>()
+        .AddScoped<HallService>()
         .AddScoped<ScreeningService>()
         .AddScoped<GuidService>();
 
