@@ -7,28 +7,43 @@
 @inject IToastService ToastService
 @inject DialogService DialogService
 
-<div class="d-flex flex-column vh-100 gap-1">
-    @foreach (var seatRow in hallForView?.SeatsRows ?? [])
-    {
-        <div class="d-flex flex-row gap-1">
-            @foreach (var seat in seatRow.Seats)
+<div class="d-flex flex-column h-100">
+    <div class="d-flex justify-content-center pt-2 hall-name">
+        <RadzenText TextStyle="TextStyle.H2">@hallForView?.Name</RadzenText>
+    </div>
+
+    <div class="d-flex justify-content-center align-items-center hall-display">
+        <div class="d-flex flex-column gap-1" style="width: fit-content">
+            @foreach (var seatRow in hallForView?.SeatsRows ?? [])
             {
-                <div class="seat" style="@GetStyleForSeat(seat)" @onclick="() => OpenReservationDialogAsync(seat)">
-                    @seat.SeatNumber
-                    <div>
-                        @if (seat.IsForDisabled)
-                        {
-                            <i class="fa-solid fa-wheelchair"></i>
-                        }
-                    </div>
+                <div class="d-flex flex-row gap-1">
+                    @foreach (var seat in seatRow.Seats)
+                    {
+                        <div class="@GetClassForSeat(seat)" @onclick="() => OpenReservationDialogAsync(seat)">
+                            @seat.SeatNumber
+                            <div>
+                                @if (seat.IsForDisabled)
+                                {
+                                    <i class="fa-solid fa-wheelchair"></i>
+                                }
+                            </div>
+                        </div>
+                    }
                 </div>
             }
         </div>
-    }
+    </div>
 </div>
 
-<RadzenButton>Button</RadzenButton>
-
+<style>
+    .hall-name {
+        flex: 0 1 auto;
+    }
+    
+    .hall-display {
+        flex: 1 1 auto;
+    }
+</style>
 @code {
     HallForView? hallForView;
 
@@ -36,21 +51,21 @@
     {
         var hallForViewResult = await HallViewService.GetHallViewAsync();
         hallForView = hallForViewResult.Match(
-            h => h,
-            e =>
-            {
-                ToastService.ShowError("Error");
-                return default!;
-            }
+        h => h,
+        e =>
+        {
+            ToastService.ShowError("Error");
+            return default!;
+        }
         );
     }
 
     Task OpenReservationDialogAsync(SeatForView seat) =>
-        DialogService.OpenAsync<AddReservationDialog>(
-            "Add reservation", 
-            new Dictionary<string, object>() {["Seat"] = seat},
-            new DialogOptions() { Width = "700px", Height = "500px", Resizable = true, Draggable = true });
+    DialogService.OpenAsync<AddReservationPage>(
+    "Add reservation",
+    new Dictionary<string, object>() { ["Seat"] = seat },
+    new DialogOptions() { Width = "700px", Height = "500px", Resizable = true, Draggable = true });
 
-    string GetStyleForSeat(SeatForView seatForView) =>
-        $"height: 50px; width: 50px;";
-}
+    string GetClassForSeat(SeatForView seatForView) =>
+    $"seat {(seatForView.Reservation is null ? "free" : "booked")}";
+    }
