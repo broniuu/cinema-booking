@@ -1,4 +1,5 @@
 ﻿@using System.Text.Json
+@using CinemaBooking.Web.Db.Entitites
 @using CinemaBooking.Web.Dtos
 @using CinemaBooking.Web.Services
 
@@ -7,48 +8,68 @@
 @inject IToastService ToastService
 @inject DialogService DialogService
 
-<div class="d-flex flex-column h-100">
-    <div class="d-flex justify-content-center pt-2 hall-name">
-        <RadzenText TextStyle="TextStyle.H2">@hallForView?.Name</RadzenText>
-    </div>
+@if (screeningChoosen)
+{
+    <div class="d-flex flex-column h-100">
+        <div class="pt-2 hall-name">
+            <div class="d-flex justify-content-center">
+                <RadzenText TextStyle="TextStyle.H2">Hall: @hallForView?.Name</RadzenText>
+            </div>
+            <div class="d-flex justify-content-center">
+                <RadzenText TextStyle="TextStyle.H3">Screening: @Screening?.Name</RadzenText>
+            </div>
+        </div>
 
-    <div class="d-flex justify-content-center align-items-center hall-display">
-        <div class="d-flex flex-column gap-1" style="width: fit-content">
-            @foreach (var seatRow in hallForView?.SeatsRows ?? [])
-            {
-                <div class="d-flex flex-row gap-1">
-                    @foreach (var seat in seatRow.Seats)
-                    {
-                        <div class="@GetClassForSeat(seat)" @onclick="() => OpenReservationDialogAsync(seat)">
-                            <RadzenText TextStyle="TextStyle.H6">@seat.SeatNumber</RadzenText>
-                            <div>
-                                @if (seat.IsForDisabled)
-                                {
-                                    <i class="fa-solid fa-wheelchair"></i>
-                                }
+        <div class="d-flex justify-content-center align-items-center hall-display">
+            <div class="d-flex flex-column gap-1" style="width: fit-content">
+                @foreach (var seatRow in hallForView?.SeatsRows ?? [])
+                {
+                    <div class="d-flex flex-row gap-1">
+                        @foreach (var seat in seatRow.Seats)
+                        {
+                            <div class="@GetClassForSeat(seat)" @onclick="() => OpenReservationDialogAsync(seat)">
+                                <RadzenText TextStyle="TextStyle.H6" Style="color: white;">@seat.SeatNumber</RadzenText>
+                                <div>
+                                    @if (seat.IsForDisabled)
+                                    {
+                                        <i class="fa-solid fa-wheelchair"></i>
+                                    }
+                                </div>
                             </div>
-                        </div>
-                    }
-                </div>
-            }
+                        }
+                    </div>
+                }
+            </div>
         </div>
     </div>
-</div>
+}
+
 
 <style>
     .hall-name {
         flex: 0 1 auto;
     }
-    
+
     .hall-display {
         flex: 1 1 auto;
     }
 </style>
 @code {
-    HallForView? hallForView;
+    [Parameter]
+    public Screening? Screening { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    HallForView? hallForView;
+    Screening screening;
+    bool screeningChoosen;
+
+    protected override async Task OnParametersSetAsync()
     {
+        screeningChoosen = Screening is not null;
+        if (!screeningChoosen)
+        {
+            return;
+        }
+        screening = Screening!;
         var hallForViewResult = await HallViewService.GetHallViewAsync();
         hallForView = hallForViewResult.Match(
         h => h,
@@ -62,10 +83,10 @@
 
     Task OpenReservationDialogAsync(SeatForView seat) =>
     DialogService.OpenAsync<AddReservationPage>(
-    "Add reservation",
-    new Dictionary<string, object>() { ["Seat"] = seat },
-    new DialogOptions() { Width = "700px", Height = "500px", Resizable = true, Draggable = true });
+        "Add reservation",
+        new Dictionary<string, object>() { ["Seat"] = seat },
+        new DialogOptions() { Width = "fit-contnent", Height = "fit-contnent", Resizable = true, Draggable = true });
 
     string GetClassForSeat(SeatForView seatForView) =>
     $"seat {(seatForView.Reservation is null ? "free" : "booked")} rz-ripple";
-    }
+}

@@ -1,10 +1,85 @@
-﻿<div>
-    Seat Number: @(Seat?.SeatNumber)
-</div>
+﻿@using CinemaBooking.Web.Db.Entitites
+@using CinemaBooking.Web.Extensions
+
+@inject ILogger<AddReservationPage> Logger
+@inject DialogService DialogService
+
+@if (showErrorMessage)
+{
+    <RadzenStack JustifyContent="JustifyContent.Center">
+        <RadzenText TextStyle="TextStyle.H6" class="p-5">Unexcpected error occured</RadzenText>
+        <RadzenButton Click="DialogService.Close" Text="Close"/>
+    </RadzenStack>
+} else
+{
+    <RadzenText TextStyle="TextStyle.H6">Seat: @seat.SeatNumber</RadzenText>
+    <RadzenTemplateForm TItem="ReservationFrom" Data=@reservationFrom Submit="SaveReservation">
+        <RadzenCard class="my-5 mx-auto" Style="max-width: 400px;">
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Phone number</RadzenText>
+            <RadzenMask Mask="(***) ***-****" CharacterPattern="[0-9]" Placeholder="(000) 000-0000" Name="Phone" @bind-Value=@reservationFrom.PhoneNumber
+                        Style="width: 100%;" aria-label="Phone" />
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Name</RadzenText>
+            <RadzenTextBox Placeholder="John" Name="Name" @bind-Value=@reservationFrom.Name Style="width: 100%;" aria-label="Name" />
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Surname</RadzenText>
+            <RadzenTextBox Placeholder="Kowalski" Name="Surname" @bind-Value=@reservationFrom.Surname Style="width: 100%;" aria-label="Surname" />
+            <div class="row">
+                <div class="col-md-12 d-flex align-items-end justify-content-left mt-4">
+                    <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Save" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" Click="Reset"
+                                  Icon="cancel" style="margin-left: 10px;" Text="Reset" />
+                </div>
+            </div>
+        </RadzenCard>
+    </RadzenTemplateForm>
+}
+
 
 @code {
     [Parameter]
     public SeatForView? Seat { get; set; }
 
+    [Parameter]
+    public Guid ScreeningId { get; set; }
 
+    ReservationFrom reservationFrom = new();
+    SeatForView seat;
+
+    bool showErrorMessage;
+
+    protected override void OnInitialized()
+    {
+        if (Seat is null)
+        {
+            showErrorMessage = true;
+            Logger.LogError($"{nameof(Seat)} is null");
+            return;
+        }
+        seat = Seat;
+
+    }
+
+    void SaveReservation(ReservationFrom args)
+    {
+        var reservation = new Reservation
+            {
+                Id = Guid.NewGuid(),
+                Name = args.Name,
+                Surname = args.Surname,
+                ScreeningId = ScreeningId,
+                PhoneNumber = args.PhoneNumber,
+                SeatId = seat.Id
+            };
+    }
+
+    void Reset()
+    {
+        reservationFrom = new();
+    }
+
+    class ReservationFrom
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Surname { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+    }
 }
