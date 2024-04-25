@@ -50,7 +50,7 @@ h1:focus {
     border-color: #929292;
 }
 
-/*Radzen customization*/
+/*--- Radzen customization --- */
 
 .rz-dialog-confirm-message {
     color: var(--rz-text-color);
@@ -58,4 +58,12 @@ h1:focus {
 
 .rz-dialog-alert-message {
     color: var(--rz-text-color);
+}
+
+/*-- Toast (Notoficiation) --*/
+
+.rz-notification-message.rz-growl {
+    position: fixed !important;
+    right: 5px !important;
+    top: 0 !important;
 }
