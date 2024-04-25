@@ -1,6 +1,4 @@
-﻿@page "/hall/{hallId:guid}"
-
-@using System.Text.Json
+﻿@using System.Text.Json
 @using CinemaBooking.Web.Dtos
 @using CinemaBooking.Web.Services
 
@@ -32,14 +30,11 @@
 <RadzenButton>Button</RadzenButton>
 
 @code {
-    [Parameter]
-    public Guid HallId { get; set; }
-
     HallForView? hallForView;
 
     protected override async Task OnInitializedAsync()
     {
-        var hallForViewResult = await HallViewService.GetHallViewAsync(HallId);
+        var hallForViewResult = await HallViewService.GetHallViewAsync();
         hallForView = hallForViewResult.Match(
             h => h,
             e =>

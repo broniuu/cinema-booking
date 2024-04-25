@@ -9,7 +9,7 @@
     <RadzenColumn Size="3">
         <RadzenCard class="p-0 pb-2 screening-management">
             <div class="add-screening">
-                <AddScreeningComponent OnSaveScreening="HandleAddScreening" />
+                <AddScreeningPage OnSaveScreening="HandleAddScreening" />
             </div>
             <RadzenDataList Data="@screenings" Class="screening-list" WrapItems>
                 <Template Context="screening">
@@ -21,7 +21,7 @@
                             </RadzenColumn>
                             <RadzenColumn Class="rz-ripple remove-screening" @onclick="() => RemoveScreening(screening)">
                                 <div class="h-100 d-flex justify-content-center align-items-center">
-                                    <RadzenIcon Icon="@("<i class=\"fa-solid fa-trash\"></i>")" />
+                                    <RadzenIcon Style="color: white;" Icon="@("<i class=\"fa-solid fa-trash\"></i>")" />
                                 </div>
                             </RadzenColumn>
                         </RadzenRow>
@@ -69,7 +69,7 @@
 
 @code {
     List<Screening>? screenings;
-    Screening? screeningToAdd;
+
 
     protected override async Task OnInitializedAsync()
     {
