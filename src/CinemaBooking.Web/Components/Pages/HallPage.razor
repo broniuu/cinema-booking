@@ -20,7 +20,7 @@
                     @foreach (var seat in seatRow.Seats)
                     {
                         <div class="@GetClassForSeat(seat)" @onclick="() => OpenReservationDialogAsync(seat)">
-                            @seat.SeatNumber
+                            <RadzenText TextStyle="TextStyle.H6">@seat.SeatNumber</RadzenText>
                             <div>
                                 @if (seat.IsForDisabled)
                                 {
@@ -67,5 +67,5 @@
     new DialogOptions() { Width = "700px", Height = "500px", Resizable = true, Draggable = true });
 
     string GetClassForSeat(SeatForView seatForView) =>
-    $"seat {(seatForView.Reservation is null ? "free" : "booked")}";
+    $"seat {(seatForView.Reservation is null ? "free" : "booked")} rz-ripple";
     }

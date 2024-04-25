@@ -7,13 +7,17 @@
     align-content: center;
     cursor: pointer;
 }
+
+.seat:hover {
+    box-shadow: var(--rz-shadow-6);
+}
+
 .seat div{
-    font-size: 12px;
+    font-size: 20px;
     position: absolute;
     bottom: 0;
     right: 0;
-    margin: 0 4px 0 4px;
-    
+    margin: 0 4px 0 4px;    
 }
 
 .seat.free {
