@@ -1,0 +1,99 @@
+﻿@page "/screenings"
+@using CinemaBooking.Web.Db.Entitites
+@using CinemaBooking.Web.Extensions
+@inject ScreeningService ScreeningService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenRow Style="height: 100%;">
+    <RadzenColumn Size="3">
+        <RadzenCard class="p-0 pb-2 screening-management">
+            <div class="add-screening">
+                <AddScreeningPage OnSaveScreening="HandleAddScreening" />
+            </div>
+            <RadzenDataList Data="@screenings" Class="screening-list" WrapItems>
+                <Template Context="screening">
+                    <RadzenCard Style="width: 100%; padding: 0;">
+                        <RadzenRow Gap="0">
+                            <RadzenColumn Size="10" Class="rz-p-4 rz-ripple screening">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-color-secondary">@(screening.Name)</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body1" TagName="TagName.H6" class="rz-color-secondary">@(screening.Date)</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn Class="rz-ripple remove-screening" @onclick="() => RemoveScreening(screening)">
+                                <div class="h-100 d-flex justify-content-center align-items-center">
+                                    <RadzenIcon Style="color: white;" Icon="@("<i class=\"fa-solid fa-trash\"></i>")" />
+                                </div>
+                            </RadzenColumn>
+                        </RadzenRow>
+                    </RadzenCard>
+                </Template>
+            </RadzenDataList>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn>
+        <RadzenCard class="p-0" Style="height: 100%;">
+
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+<style>
+    .screening-management {
+        display: flex;
+        flex-flow: column;
+        height: calc(var(--body-height) - var(--rz-layout-body-padding) * 2);
+    }
+    
+    .add-screening {
+        flex: 0 1 auto;
+    }
+
+    .screening-list {
+        flex: 1 1 auto;
+        overflow-y: auto;
+    }
+
+    .screening {
+        min-height: 72px;
+        background-color: var(--rz-secondary-lighter);
+        cursor: pointer;
+    }
+
+    .remove-screening {
+        min-height: 72px;
+        background-color: var(--rz-danger-darker);
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    List<Screening>? screenings;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        screenings = await ScreeningService.GetAllAsync();
+    }
+
+    async Task HandleAddScreening(bool addScreeningScuccess)
+    {
+        if (!addScreeningScuccess)
+        {
+            return;
+        }
+        screenings = await ScreeningService.GetAllAsync();
+    }
+
+    async Task RemoveScreening(Screening screeningToRemove)
+    {
+        var deleteScreening = await DialogService.Confirm("Are you sure, you wan't do delete this screening", "Delete Screening");
+        if (deleteScreening == false)
+        {
+            return;
+        }
+        await ScreeningService.RemoveAsync(screeningToRemove);
+        screenings?.Remove(screeningToRemove);
+        NotificationService.NotifySuccess("Deleted screening successfuly");
+    }
+}

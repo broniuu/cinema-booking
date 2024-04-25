@@ -1,20 +1,11 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<RadzenLayout>
+    <NavMenu />
+    <RadzenBody class="body-view">
+        @Body
+    </RadzenBody>
+</RadzenLayout>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.
@@ -23,3 +14,10 @@
 </div>
 
 <RadzenComponents />
+
+<style>
+    .body-view {
+        color: var(--rz-text-color);
+        --body-height: calc(100vh - var(--rz-header-min-height)); 
+    }
+</style>

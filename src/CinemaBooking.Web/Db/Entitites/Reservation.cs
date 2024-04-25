@@ -2,12 +2,12 @@
 
 public class Reservation
 {
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; }
     public required string Name { get; set; }
     public required string Surname{ get; set; }
     public required string PhoneNumber { get; set; }
-    public virtual required Seat Seat { get; set; }
+    public virtual Seat Seat { get; set; } = null!;
     public required Guid SeatId { get; set; }
-    public virtual required Screening Screening { get; set; }
-    public Guid ScreeningId { get; set; }
+    public virtual Screening Screening { get; set; } = null!;
+    public required Guid ScreeningId { get; set; }
 }

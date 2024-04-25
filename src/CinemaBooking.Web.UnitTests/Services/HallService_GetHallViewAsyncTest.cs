@@ -1,14 +1,14 @@
 ﻿using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
-using FluentAssertions;
+using Microsoft.Extensions.Logging;
 
 namespace CinemaBooking.Web.UnitTests.Services;
-public class HallViewServiceGetTest : IDisposable
+public sealed class HallService_GetHallViewAsyncTest : IDisposable
 {
     private readonly InMemorySqliteProvider _sqliteProvider;
 
-    public HallViewServiceGetTest()
+    public HallService_GetHallViewAsyncTest()
     {
         _sqliteProvider = new InMemorySqliteProvider();
         _sqliteProvider.InitializeConnection();
@@ -19,21 +19,36 @@ public class HallViewServiceGetTest : IDisposable
     [Fact]
     public async Task WhenHallNotExists_ThenReturnFaulted()
     {
-        var dbContext = _sqliteProvider.CreateDbContext();
-        await dbContext.Halls.AddAsync(
-            new()
-            {
-                Name = "Test",
-                Screenings = [],
-                Seats = [],
-                Id = Guid.Parse("3f83d3e6-9bcb-447e-8979-b5bcae4a19da"),
-            }
-
-        );
-        await dbContext.SaveChangesAsync();
-        var hallViewService = new HallViewService(_sqliteProvider.CreateDbContextFactory());
-        var result = await hallViewService.GetHallViewAsync(Guid.Parse("85a91b48-b1d9-400b-b3ba-a96cbbaed499"));
+        var logger = Substitute.For<ILogger<HallService>>();
+        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger);
+        var result = await hallViewService.GetHallViewAsync();
+        logger.ReceivedLogError("Halls contains no elements");
         result.IsFaulted.Should().BeTrue();
+        result.IfFail(e => e.Message.Should().Be("Error occured when getting the hall"));
+    }
+
+    [Fact]
+    public async Task WhenMoreThanOneHallExists_ThenReturnFaulted()
+    {
+        await using var dbContext = _sqliteProvider.CreateDbContext();
+        await dbContext.Halls.AddRangeAsync(
+            new Hall()
+            {
+                Id = Guid.Parse("caa6d6b1-c32c-466e-bad6-e272e103889c"),
+                Name = "Test 1"
+            },
+            new Hall()
+            {
+                Id = Guid.Parse("ffbc38c0-ce9e-4b49-a74c-8c541fb78db7"),
+                Name = "Test 2"
+            });
+        await dbContext.SaveChangesAsync();
+        var logger = Substitute.For<ILogger<HallService>>();
+        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger);
+        var result = await hallViewService.GetHallViewAsync();
+        logger.ReceivedLogError<InvalidOperationException>("Halls contains more than one element");
+        result.IsFaulted.Should().BeTrue();
+        result.IfFail(e => e.Message.Should().Be("Error occured when getting the hall"));
     }
 
     [Fact]
@@ -112,8 +127,8 @@ public class HallViewServiceGetTest : IDisposable
             },
         ]);
         await dbContext.SaveChangesAsync();
-        var hallViewService = new HallViewService(_sqliteProvider.CreateDbContextFactory());
-        var result = await hallViewService.GetHallViewAsync(Guid.Parse("114b855e-7325-4b60-ade2-8bb83871751a"));
+        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), Substitute.For<ILogger<HallService>>());
+        var result = await hallViewService.GetHallViewAsync();
         var hallView = result.Match(hv => hv, e => default!);
         hallView.Should().BeEquivalentTo(
             new

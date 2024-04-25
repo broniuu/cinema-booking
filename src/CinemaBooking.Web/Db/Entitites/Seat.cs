@@ -2,11 +2,11 @@
 
 public class Seat
 {
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; }
     public int PositionX { get; set; }
     public int PositionY { get; set; }
     public required string SeatNumber { get; set; }
-    public virtual required Hall Hall { get; set; }
+    public virtual Hall Hall { get; set; } = null!;
     public virtual required Guid HallId { get; set; }
     public bool IsForDisabled { get; set; }
     public virtual Reservation? Reservation { get; set; }

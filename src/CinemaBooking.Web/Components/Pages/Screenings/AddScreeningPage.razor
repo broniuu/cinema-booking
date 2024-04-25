@@ -1,0 +1,77 @@
+﻿@using CinemaBooking.Web.Db.Entitites
+@using CinemaBooking.Web.Extensions
+@inject HallService HallService
+@inject DialogService DialogService
+@inject ScreeningService ScreeningService
+@inject NotificationService NotificationService
+
+<RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem" Class="rz-p-2" Style="width: 100%;">
+    @if (addingScrening)
+    {
+        <RadzenStack Style="width: 100%;">
+            <RadzenButton class="rz-background-color-danger" Text="Cancel" Click="() => addingScrening = false" />
+        </RadzenStack>
+        <RadzenStack Style="width: 100%;">
+            <RadzenFormField Text="Date of screening" Variant="Variant.Text" Style="width: 100%;">
+                <RadzenDatePicker @bind-Value=@date ShowCalendarWeek />
+            </RadzenFormField>
+            <RadzenFormField Text="Name of screening" Variant="Variant.Text" Style="width: 100%;">
+                <RadzenTextBox @bind-Value="@name" Style="width: 100%;" />
+            </RadzenFormField>
+            <RadzenButton Variant="Variant.Outlined" ButtonType="ButtonType.Submit"
+                          ButtonStyle="ButtonStyle.Success" Text="Submit" Size="ButtonSize.Small" Style="width: 100%"
+                          Click="SaveScreeningAsync" />
+        </RadzenStack>
+    }
+    else
+    {
+        <RadzenStack Style="width: 100%;">
+            <RadzenButton Text="Add Screening" Click="() => addingScrening = true" />
+        </RadzenStack>
+    }
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public EventCallback<bool> OnSaveScreening { get; set; }
+
+    bool addingScrening;
+    string name = string.Empty;
+    DateOnly date = DateTime.Now.ToDateOnly();
+
+    async Task SaveScreeningAsync()
+    {
+        var hallResult = await HallService.GetHallAsync();
+        var hall = hallResult.ReturnOrDoIfFailed(e =>
+        {
+            DialogService.Alert(e.Message, "Error!");
+            addingScrening = false;
+            return null;
+        });
+        if (hall is null)
+        {
+            return;
+        }
+        var screening = new Screening()
+            {
+                Id = Guid.NewGuid(),
+                Date = date,
+                Name = name,
+                HallId = hall.Id
+            };
+        var addedScreeningResult = await ScreeningService.AddAsync(screening);
+        var addedScreening = addedScreeningResult.Match(
+            s =>
+            {
+                NotificationService.NotifySuccess("Succsfully added screening!");
+                addingScrening = false;
+                return s;
+            },
+        e =>
+            {
+                DialogService.Alert(e.Message, "Error!");
+                return null;
+            });
+        await OnSaveScreening.InvokeAsync(addedScreening is not null ? true : false);
+    }
+}
