@@ -10,7 +10,7 @@ public class ReservationValidator : AbstractValidator<Reservation>
         RuleFor(r => r.Id).NotEmpty();
         RuleFor(r => r.Name).NotEmpty();
         RuleFor(r => r.Surname).NotEmpty();
-        RuleFor(r => r.PhoneNumber).NotEmpty();
+        RuleFor(r => r.PhoneNumber).Matches(@"^\s*\+?\d+(?:\s\d+)*\s*");
         RuleFor(r => r.ScreeningId).NotEmpty();
         RuleFor(r => r.SeatId).NotEmpty();
     }
