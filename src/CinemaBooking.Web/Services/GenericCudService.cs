@@ -11,7 +11,7 @@ public class GenericCudService<TEntity>(IDbContextFactory<CinemaDbContext> dbCon
     protected readonly IDbContextFactory<CinemaDbContext> _dbContextFactory = dbContextFactory;
     protected readonly IValidator<TEntity> _validator = validator;
 
-    public async Task<Result<TEntity?>> AddAsync(TEntity entity)
+    public virtual async Task<Result<TEntity?>> AddAsync(TEntity entity)
     {
         var validationResult = await _validator.ValidateAsync(entity);
         if (!validationResult.IsValid)
@@ -25,7 +25,7 @@ public class GenericCudService<TEntity>(IDbContextFactory<CinemaDbContext> dbCon
         return addedEntityEntry.Entity;
     }
 
-    public async Task<Result<TEntity?>> UpdateAsync(TEntity entity)
+    public virtual async Task<Result<TEntity?>> UpdateAsync(TEntity entity)
     {
         var validationResult = await _validator.ValidateAsync(entity);
         if (!validationResult.IsValid)
@@ -39,7 +39,7 @@ public class GenericCudService<TEntity>(IDbContextFactory<CinemaDbContext> dbCon
         return entity;
     }
 
-    public async Task RemoveAsync(TEntity screening)
+    public virtual async Task RemoveAsync(TEntity screening)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         dbContext.Set<TEntity>().Remove(screening);

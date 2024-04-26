@@ -1,4 +1,5 @@
 ﻿using CinemaBooking.Web.Db.Entitites;
+using CinemaBooking.Web.Dtos;
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,7 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
     {
         var logger = Substitute.For<ILogger<HallService>>();
         var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger);
-        var result = await hallViewService.GetHallViewAsync();
+        var result = await hallViewService.GetHallViewAsync(Guid.Parse("815c9457-5edf-48df-bf0a-37d5981c0fbe"));
         logger.ReceivedLogError("Halls contains no elements");
         result.IsFaulted.Should().BeTrue();
         result.IfFail(e => e.Message.Should().Be("Error occured when getting the hall"));
@@ -45,7 +46,7 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
         await dbContext.SaveChangesAsync();
         var logger = Substitute.For<ILogger<HallService>>();
         var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger);
-        var result = await hallViewService.GetHallViewAsync();
+        var result = await hallViewService.GetHallViewAsync(Guid.Parse("815c9457-5edf-48df-bf0a-37d5981c0fbe"));
         logger.ReceivedLogError<InvalidOperationException>("Halls contains more than one element");
         result.IsFaulted.Should().BeTrue();
         result.IfFail(e => e.Message.Should().Be("Error occured when getting the hall"));
@@ -59,6 +60,20 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
         {
             Name = "Test",
             Id = Guid.Parse("114b855e-7325-4b60-ade2-8bb83871751a"),
+            Screenings = [
+                new() {
+                    Id = Guid.Parse("815c9457-5edf-48df-bf0a-37d5981c0fbe"),
+                    Name = "Test name",
+                    Date = DateOnly.Parse("2023-06-04"),
+                    HallId = Guid.Parse("114b855e-7325-4b60-ade2-8bb83871751a"),
+                },
+                new() {
+                    Id = Guid.Parse("b46ebe09-7879-42e9-bb02-e234da7c0275"),
+                    Name = "Test name 2",
+                    Date = DateOnly.Parse("2023-06-04"),
+                    HallId = Guid.Parse("114b855e-7325-4b60-ade2-8bb83871751a")
+                }
+                ]
         };
         await dbContext.Halls.AddAsync(hall);
         await dbContext.Seats.AddRangeAsync([
@@ -124,11 +139,29 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
                 PositionY = 1,
                 Hall = hall,
                 HallId = hall.Id,
+                Reservations = [
+                    new() {
+                        Id = Guid.Parse("75a595e5-3632-4f96-b20a-feff1ed5876e"),
+                        Name = "John",
+                        Surname = "Kowalski",
+                        SeatId = Guid.Parse("fe2bad47-5c36-4c5e-82a2-0fc887c01687"),
+                        PhoneNumber = "11",
+                        ScreeningId = Guid.Parse("815c9457-5edf-48df-bf0a-37d5981c0fbe")
+                    },
+                    new() {
+                        Id = Guid.Parse("2de1b023-a180-4525-b4ac-b75727170619"),
+                        Name = "Adam",
+                        Surname = "Białowieski",
+                        SeatId = Guid.Parse("fe2bad47-5c36-4c5e-82a2-0fc887c01687"),
+                        PhoneNumber = "22",
+                        ScreeningId = Guid.Parse("b46ebe09-7879-42e9-bb02-e234da7c0275")
+                    },
+                    ]
             },
         ]);
         await dbContext.SaveChangesAsync();
         var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), Substitute.For<ILogger<HallService>>());
-        var result = await hallViewService.GetHallViewAsync();
+        var result = await hallViewService.GetHallViewAsync(Guid.Parse("b46ebe09-7879-42e9-bb02-e234da7c0275"));
         var hallView = result.Match(hv => hv, e => default!);
         hallView.Should().BeEquivalentTo(
             new
@@ -146,6 +179,7 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
                                 SeatNumber = "1",
                                 PositionX = 0,
                                 PositionY = 0,
+                                Reservation = (object?)null
                             },
                             new
                             {
@@ -153,6 +187,7 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
                                 SeatNumber = "2",
                                 PositionX = 1,
                                 PositionY = 0,
+                                Reservation = (object?)null
                             },
                             new
                             {
@@ -160,6 +195,7 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
                                 SeatNumber = "3",
                                 PositionX = 2,
                                 PositionY = 0,
+                                Reservation = (object?)null
                             },
                         }
                     },
@@ -173,6 +209,7 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
                                 SeatNumber = "4",
                                 PositionX = 0,
                                 PositionY = 1,
+                                Reservation = (object?)null
                             },
                             new
                             {
@@ -180,6 +217,7 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
                                 SeatNumber = "5",
                                 PositionX = 1,
                                 PositionY = 1,
+                                Reservation = (object?)null
                             },
                             new
                             {
@@ -187,6 +225,7 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
                                 SeatNumber = "6",
                                 PositionX = 2,
                                 PositionY = 1,
+                                Reservation = (object?)null
                             },
                             new
                             {
@@ -194,6 +233,14 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
                                 SeatNumber = "7",
                                 PositionX = 3,
                                 PositionY = 1,
+                                Reservation = (object?)new {
+                                    Id = Guid.Parse("2de1b023-a180-4525-b4ac-b75727170619"),
+                                    Name = "Adam",
+                                    Surname = "Białowieski",
+                                    SeatId = Guid.Parse("fe2bad47-5c36-4c5e-82a2-0fc887c01687"),
+                                    PhoneNumber = "22",
+                                    ScreeningId = Guid.Parse("b46ebe09-7879-42e9-bb02-e234da7c0275")
+                                },
                             },
                         }
                     }

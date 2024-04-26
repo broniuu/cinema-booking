@@ -56,7 +56,7 @@ public sealed class ReservationService_AddAsyncTest : IDisposable
             Surname = "Kowalski",
             ScreeningId = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
             SeatId = Guid.Parse("30c185a7-3063-43fe-96d0-5f1edd36dd6e"),
-            PhoneNumber = "111111111111"
+            PhoneNumber = "  +48 111 111 121  "
         };
         //When
         var addedReservation = await sut.AddAsync(fakeReservation);
@@ -69,7 +69,7 @@ public sealed class ReservationService_AddAsyncTest : IDisposable
                 Surname = "Kowalski",
                 ScreeningId = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
                 SeatId = Guid.Parse("30c185a7-3063-43fe-96d0-5f1edd36dd6e"),
-                PhoneNumber = "111111111111"
+                PhoneNumber = "+48111111121"
             }
         );
         dbContext.Reservations.Should().BeEquivalentTo(
@@ -81,7 +81,7 @@ public sealed class ReservationService_AddAsyncTest : IDisposable
                 Surname = "Kowalski",
                 ScreeningId = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
                 SeatId = Guid.Parse("30c185a7-3063-43fe-96d0-5f1edd36dd6e"),
-                PhoneNumber = "111111111111"
+                PhoneNumber = "+48111111121"
             }
             ]
         );
