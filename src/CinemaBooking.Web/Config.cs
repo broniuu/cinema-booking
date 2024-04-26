@@ -12,11 +12,13 @@ public static class Config
 {
     public static IServiceCollection AddCinemaManagementServices(this IServiceCollection services) => services
         .AddScoped<HallService>()
+        .AddScoped<ReservationService>()
         .AddScoped<ScreeningService>()
         .AddScoped<GuidService>();
 
     public static IServiceCollection AddValidators(this IServiceCollection services) => services
-        .AddScoped<IValidator<Screening>, ScreeningValidator>();
+        .AddScoped<IValidator<Screening>, ScreeningValidator>()
+        .AddScoped<IValidator<Reservation>, ReservationValidator>();
 
     public static IServiceCollection AddDbContextFactory(this IServiceCollection services) => services
         .AddDbContextFactory<CinemaDbContext>(o =>

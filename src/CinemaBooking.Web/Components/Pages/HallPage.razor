@@ -59,18 +59,19 @@
     public Screening? Screening { get; set; }
 
     HallForView? hallForView;
-    Screening screening;
+    Screening? screening;
     bool screeningChoosen;
 
     protected override async Task OnParametersSetAsync()
     {
-        screeningChoosen = Screening is not null;
-        if (!screeningChoosen)
+        if (Screening is null)
         {
+            screeningChoosen = false;
             return;
         }
-        screening = Screening!;
-        var hallForViewResult = await HallViewService.GetHallViewAsync();
+        screening = Screening;
+        screeningChoosen = true;
+        var hallForViewResult = await HallViewService.GetHallViewAsync(screening.Id);
         hallForView = hallForViewResult.Match(
         h => h,
         e =>
@@ -85,8 +86,8 @@
     DialogService.OpenAsync<AddReservationPage>(
         "Add reservation",
         new Dictionary<string, object>() { ["Seat"] = seat },
-        new DialogOptions() { Width = "fit-contnent", Height = "fit-contnent", Resizable = true, Draggable = true });
+        new DialogOptions() { Width = "500px", Height = "fit-contnent", Resizable = true, Draggable = true });
 
     string GetClassForSeat(SeatForView seatForView) =>
-    $"seat {(seatForView.Reservation is null ? "free" : "booked")} rz-ripple";
+    $"seat {(seatForView is null ? "free" : "booked")} rz-ripple";
 }

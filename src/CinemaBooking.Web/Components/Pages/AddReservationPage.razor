@@ -1,27 +1,39 @@
 ﻿@using CinemaBooking.Web.Db.Entitites
 @using CinemaBooking.Web.Extensions
+@using System.Text.RegularExpressions
 
 @inject ILogger<AddReservationPage> Logger
 @inject DialogService DialogService
+@inject ReservationService ReservationService
 
 @if (showErrorMessage)
 {
     <RadzenStack JustifyContent="JustifyContent.Center">
         <RadzenText TextStyle="TextStyle.H6" class="p-5">Unexcpected error occured</RadzenText>
-        <RadzenButton Click="DialogService.Close" Text="Close"/>
+        <RadzenButton Click="DialogService.Close" Text="Close" />
     </RadzenStack>
-} else
+}
+else
 {
     <RadzenText TextStyle="TextStyle.H6">Seat: @seat.SeatNumber</RadzenText>
-    <RadzenTemplateForm TItem="ReservationFrom" Data=@reservationFrom Submit="SaveReservation">
+    <RadzenTemplateForm TItem="ReservationFrom" Data=@reservationFrom Submit="SaveReservationAsync">
         <RadzenCard class="my-5 mx-auto" Style="max-width: 400px;">
             <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Phone number</RadzenText>
-            <RadzenMask Mask="(***) ***-****" CharacterPattern="[0-9]" Placeholder="(000) 000-0000" Name="Phone" @bind-Value=@reservationFrom.PhoneNumber
-                        Style="width: 100%;" aria-label="Phone" />
+            <RadzenTextBox Placeholder="+48 000 000 000" Name="Phone" @bind-Value=@reservationFrom.PhoneNumber Style="width: 100%;" aria-label="Phone" />
+            <div style="height: 1px">
+                <RadzenRequiredValidator Component="Phone" Text="Field can not be empty" />
+                <RadzenRegexValidator Component="Phone" Text="This is not valid phone number" Pattern="@(@"\+?\d[\d,"" ""]*")" />
+            </div>
             <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Name</RadzenText>
             <RadzenTextBox Placeholder="John" Name="Name" @bind-Value=@reservationFrom.Name Style="width: 100%;" aria-label="Name" />
+            <div style="height: 1px">
+                <RadzenRequiredValidator Component="Name" Text="Field can not be empty" />
+            </div>
             <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Surname</RadzenText>
             <RadzenTextBox Placeholder="Kowalski" Name="Surname" @bind-Value=@reservationFrom.Surname Style="width: 100%;" aria-label="Surname" />
+            <div style="height: 1px">
+                <RadzenRequiredValidator Component="Surname" Text="Field can not be empty" />
+            </div>
             <div class="row">
                 <div class="col-md-12 d-flex align-items-end justify-content-left mt-4">
                     <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Save" />
@@ -41,8 +53,11 @@
     [Parameter]
     public Guid ScreeningId { get; set; }
 
+    [Parameter]
+    public ReservationForView? ReservationForView { get; set; }
+
     ReservationFrom reservationFrom = new();
-    SeatForView seat;
+    SeatForView seat = null!;
 
     bool showErrorMessage;
 
@@ -55,20 +70,39 @@
             return;
         }
         seat = Seat;
+        if (ReservationForView is null)
+        {
+            return;
+        }
+        reservationFrom = new()
+            {
+                Name = ReservationForView.Name,
+                Surname = ReservationForView.Surname,
+                PhoneNumber = ReservationForView.PhoneNumber
+            };
 
     }
 
-    void SaveReservation(ReservationFrom args)
+    async Task SaveReservationAsync(ReservationFrom args)
     {
+        args.PhoneNumber = Regex.Replace(args.PhoneNumber, @"\s+", "");
+        Console.WriteLine(args.PhoneNumber);
         var reservation = new Reservation
             {
-                Id = Guid.NewGuid(),
+                Id = ReservationForView?.Id ?? Guid.NewGuid(),
                 Name = args.Name,
                 Surname = args.Surname,
                 ScreeningId = ScreeningId,
                 PhoneNumber = args.PhoneNumber,
                 SeatId = seat.Id
             };
+        // var saveReservationResult = ReservationForView is null ?
+        //     await ReservationService.AddAsync(reservation) : await ReservationService.UpdateAsync(reservation);
+        // var savedsaveReservationResult.ReturnOrDoIfFailed(
+        //     e =>
+        //     {
+
+        //     });
     }
 
     void Reset()

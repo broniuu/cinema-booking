@@ -99,9 +99,11 @@ public class CinemaDbContext(DbContextOptions<CinemaDbContext> options) : DbCont
             .Property(e => e.HallId)
             .IsRequired();
         modelBuilder.Entity<Seat>()
-            .HasOne(e => e.Reservation)
+            .HasMany(e => e.Reservations)
             .WithOne(e => e.Seat)
-            .HasForeignKey<Reservation>();
+            .HasForeignKey(e => e.SeatId)
+            .HasPrincipalKey(e => e.Id)
+            .IsRequired();
 
     }
 }

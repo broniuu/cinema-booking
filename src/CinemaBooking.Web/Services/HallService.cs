@@ -12,7 +12,7 @@ public class HallService(IDbContextFactory<CinemaDbContext> dbContextFactory, IL
     private readonly IDbContextFactory<CinemaDbContext> _dbContextFactory = dbContextFactory;
     private readonly ILogger<HallService> _logger = logger;
 
-    public async Task<Result<HallForView?>> GetHallViewAsync()
+    public async Task<Result<HallForView?>> GetHallViewAsync(Guid screeningId)
     {
         var exceptionMessage = "Error occured when getting the hall";
         try
@@ -24,8 +24,8 @@ public class HallService(IDbContextFactory<CinemaDbContext> dbContextFactory, IL
                 _logger.LogError("Halls contains no elements");
                 return new Result<HallForView?>(new Exception(exceptionMessage));
             }
-            var seatsByRow = await dbContext.Seats.Where(s => s.HallId == hall.Id).GroupBy(s => s.PositionY).ToListAsync();
-            var rowsForView = seatsByRow.Select(r => new SeatsRowForView([.. r.OrderBy(s => s.PositionX).Select(r => r.CreateForView())]));
+            var seatsByRow = await dbContext.Seats.Include(s => s.Reservations).Where(s => s.HallId == hall.Id).GroupBy(s => s.PositionY).ToListAsync();
+            var rowsForView = seatsByRow.Select(r => new SeatsRowForView([.. r.OrderBy(s => s.PositionX).Select(s => s.CreateForView(screeningId))]));
             return new HallForView(hall.Name, [.. rowsForView]);
         }
         catch (InvalidOperationException ex)
