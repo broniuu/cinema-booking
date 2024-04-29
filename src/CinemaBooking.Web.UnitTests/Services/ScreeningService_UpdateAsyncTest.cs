@@ -3,6 +3,7 @@ using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentValidation.Results;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace CinemaBooking.Web.UnitTests.Services;
 public sealed class ScreeningService_UpdateAsyncTest : IDisposable
@@ -24,7 +25,8 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
         // Setup failure
         validator.ValidateAsync(Arg.Any<Screening>())
             .Returns(new ValidationResult(new List<ValidationFailure>() { new("", "first error message"), new("", "second error message") }));
-        var screeningService = new ScreeningService(dbContextFactory, validator);
+        var logger = Substitute.For<ILogger<ScreeningService>>();
+        var screeningService = new ScreeningService(dbContextFactory, validator, logger);
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
@@ -64,7 +66,8 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
         var validator = Substitute.For<IValidator<Screening>>();
         validator.ValidateAsync(Arg.Any<Screening>())
             .Returns(new ValidationResult(new List<ValidationFailure>()));
-        var sut = new ScreeningService(dbContextFactory, validator);
+        var logger = Substitute.For<ILogger<ScreeningService>>();
+        var sut = new ScreeningService(dbContextFactory, validator, logger);
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
@@ -121,6 +124,39 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
         && screening1.Name == screening2.Name
         && screening1.Date == screening2.Date
         && screening1.HallId == screening2.HallId;
+
+    [Fact]
+    public async Task WhenExceptionOccuredWhileSaving_ThenRetrunException()
+    {
+        // Given
+        var dbContextFactory = _sqliteProvider.CreateFakeFailedDbContextFactory();
+        var validator = Substitute.For<IValidator<Screening>>();
+        validator.ValidateAsync(Arg.Any<Screening>())
+            .Returns(new ValidationResult(new List<ValidationFailure>()));
+        var logger = Substitute.For<ILogger<ScreeningService>>();
+        var sut = new ScreeningService(dbContextFactory, validator, logger);
+        await using var dbContext = _sqliteProvider.CreateDbContext();
+        await dbContext.Halls.AddAsync(new Hall()
+        {
+            Id = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
+            Name = "MCK"
+        });
+        await dbContext.Screenings.AddAsync(new Screening()
+        {
+            Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
+            HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
+            Name = "test screening",
+            Date = DateOnly.Parse("2023-06-04"),
+        });
+        await dbContext.SaveChangesAsync();
+        var fakeScreeningToModify = await dbContext.Screenings.FindAsync(Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"));
+        fakeScreeningToModify!.Name = "modified";
+        fakeScreeningToModify!.Date = DateOnly.Parse("2022-01-04");
+        //When
+        var result = await sut.UpdateAsync(fakeScreeningToModify);
+        //Then
+        result.ShouldBeFaultedWithMessage("Error occured while updating screening");
+    }
 
     public void Dispose()
 

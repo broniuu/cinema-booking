@@ -6,15 +6,15 @@ using LanguageExt.Common;
 
 namespace CinemaBooking.Web.Services;
 
-public class ReservationService(IDbContextFactory<CinemaDbContext> dbContextFactory, IValidator<Reservation> validator)
+public class ReservationService(IDbContextFactory<CinemaDbContext> dbContextFactory, IValidator<Reservation> validator, ILogger<ReservationService> logger)
 {
     private readonly IDbContextFactory<CinemaDbContext> _dbContextFactory = dbContextFactory;
-    private readonly GenericCudService<Reservation> _cudService = new(dbContextFactory, validator);
+    private readonly GenericCudService<Reservation> _cudService = new(dbContextFactory, validator, logger);
 
     public virtual Task<Result<Reservation?>> AddAsync(Reservation reservation)
     {
         reservation.PhoneNumber = reservation.PhoneNumber.RemoveSpaces();
-        return _cudService.AddAsync(reservation);
+        return _cudService.AddAsync(reservation, "Error occured while adding reservation");
     }
 }
     

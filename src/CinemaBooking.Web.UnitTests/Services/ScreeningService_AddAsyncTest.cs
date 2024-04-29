@@ -3,6 +3,7 @@ using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 
 namespace CinemaBooking.Web.UnitTests.Services;
 public sealed class ScreeningService_AddAsyncTest : IDisposable
@@ -23,7 +24,8 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
         var validator = Substitute.For<IValidator<Screening>>();
         validator.ValidateAsync(Arg.Any<Screening>())
             .Returns(new ValidationResult(new List<ValidationFailure>()));
-        var sut = new ScreeningService(dbContextFactory, validator);
+        var logger = Substitute.For<ILogger<ScreeningService>>();
+        var sut = new ScreeningService(dbContextFactory, validator, logger);
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
@@ -85,7 +87,8 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
         // Setup failure
         validator.ValidateAsync(Arg.Any<Screening>())
             .Returns(new ValidationResult(new List<ValidationFailure>() { new("", "first error message"), new("", "second error message") }));
-        var screeningService = new ScreeningService(dbContextFactory, validator);
+        var logger = Substitute.For<ILogger<ScreeningService>>();
+        var screeningService = new ScreeningService(dbContextFactory, validator, logger);
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
@@ -115,6 +118,38 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
                 Name = "test screening"
             })), default
         );
+    }
+
+    [Fact]
+    public async Task WhenExceptionOccuredWhileSaving_ThenRetrunException()
+    {
+        // Given
+        var dbContextFactory = _sqliteProvider.CreateFakeFailedDbContextFactory();
+        var validator = Substitute.For<IValidator<Screening>>();
+        // Setup failure
+        validator.ValidateAsync(Arg.Any<Screening>())
+            .Returns(new ValidationResult(new List<ValidationFailure>()));
+        var logger = Substitute.For<ILogger<ScreeningService>>();
+        var screeningService = new ScreeningService(dbContextFactory, validator, logger);
+        await using var dbContext = _sqliteProvider.CreateDbContext();
+        await dbContext.Halls.AddAsync(new Hall()
+        {
+            Id = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
+            Name = "MCK"
+        });
+        await dbContext.SaveChangesAsync();
+        var fakeScreening = new Screening()
+        {
+            Id = Guid.Empty,
+            HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
+            Name = "test screening",
+            Date = DateOnly.Parse("2023-06-04"),
+        };
+        // When
+        var addedScreeningResult = await screeningService.AddAsync(fakeScreening);
+        // Then
+        addedScreeningResult.ShouldBeFaultedWithMessage("Error occured while adding screening");
+        dbContext.Screenings.Should().BeEquivalentTo(Array.Empty<object>());
     }
 
     public void Dispose()
