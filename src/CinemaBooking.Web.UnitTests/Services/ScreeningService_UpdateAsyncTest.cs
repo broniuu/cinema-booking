@@ -4,6 +4,7 @@ using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentValidation.Results;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.UnitTests.Services;
 public sealed class ScreeningService_UpdateAsyncTest : IDisposable
@@ -56,6 +57,8 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
                 Name = "test screening"
             })), default
         );
+
+        logger.ReceivedLogError("first error message");
     }
 
     [Fact]
@@ -156,6 +159,7 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
         var result = await sut.UpdateAsync(fakeScreeningToModify);
         //Then
         result.ShouldBeFaultedWithMessage("Error occured while updating screening");
+        logger.ReceivedLogError<DbUpdateConcurrencyException>("Error occured while updating screening");
     }
 
     public void Dispose()

@@ -5,6 +5,7 @@
 @inject ILogger<AddReservationPage> Logger
 @inject DialogService DialogService
 @inject ReservationService ReservationService
+@inject NotificationService NotificationService
 
 
 <style>
@@ -36,26 +37,35 @@ else
                 </div>
                 <div class="close-error-message rz-color-danger pt-0 pb-0 p-1">
                     <RadzenButton Click="() => saveErrorMessageVisible = false" Variant="Variant.Outlined" Icon="@("<i class=\"fa-solid fa-xmark\"></i>")"
-                                  ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" Style="border-radius: 0 0 var(--rz-border-radius) var(--rz-border-radius);"/>
+                                  ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" Style="border-radius: 0 0 var(--rz-border-radius) var(--rz-border-radius);" />
                 </div>
+            </div>
+        }
+        else
+        {
+            <div style="width: 400px;" class="mx-auto d-flex justify-content-center">
+                <RadzenButton Click="() => RemoveReservationAsync()" Icon="delete" Text="Remove reservation" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" />
             </div>
         }
         <RadzenTemplateForm TItem="ReservationFrom" Data=@reservationFrom Submit="SaveReservationAsync">
             <RadzenCard class="my-4 mx-auto" Style="width: 400px;">
                 <RadzenText TextStyle="TextStyle.H6">Seat: @seat.SeatNumber</RadzenText>
                 <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Phone number</RadzenText>
-                <RadzenTextBox Placeholder="+48 000 000 000" Name="Phone" @bind-Value=@reservationFrom.PhoneNumber Style="width: 100%;" aria-label="Phone" />
+                <RadzenTextBox Placeholder="+48 000 000 000" Name="Phone" @bind-Value=@reservationFrom.PhoneNumber Change="_ => unsavedChangesExists = true"
+                               Style="width: 100%;" aria-label="Phone" />
                 <div style="height: 1px">
                     <RadzenRequiredValidator Component="Phone" Text="Field can not be empty" />
                     <RadzenRegexValidator Component="Phone" Text="This is not valid phone number" Pattern="@(@"^\s*\+?\d+(?:\s\d+)*\s*")" />
                 </div>
                 <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Name</RadzenText>
-                <RadzenTextBox Placeholder="John" Name="Name" @bind-Value=@reservationFrom.Name Style="width: 100%;" aria-label="Name" />
+                <RadzenTextBox Placeholder="John" Name="Name" @bind-Value=@reservationFrom.Name
+                               Style="width: 100%;" aria-label="Name" Change="_ => unsavedChangesExists = true" />
                 <div style="height: 1px">
                     <RadzenRequiredValidator Component="Name" Text="Field can not be empty" />
                 </div>
                 <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Surname</RadzenText>
-                <RadzenTextBox Placeholder="Kowalski" Name="Surname" @bind-Value=@reservationFrom.Surname Style="width: 100%;" aria-label="Surname" />
+                <RadzenTextBox Placeholder="Kowalski" Name="Surname" @bind-Value=@reservationFrom.Surname
+                               Style="width: 100%;" aria-label="Surname" Change="_ => unsavedChangesExists = true" />
                 <div style="height: 1px">
                     <RadzenRequiredValidator Component="Surname" Text="Field can not be empty" />
                 </div>
@@ -68,6 +78,7 @@ else
                 </div>
             </RadzenCard>
         </RadzenTemplateForm>
+        <RadzenButton Click="CloseDialogAsync" ButtonStyle="ButtonStyle.Danger" Text="Close" />
     </div>
 }
 
@@ -86,6 +97,8 @@ else
 
     bool unexpectedErrorMessageVisible;
     bool saveErrorMessageVisible;
+    bool reservationModified;
+    bool unsavedChangesExists;
     string saveErrorMessage = string.Empty;
 
     protected override void OnInitialized()
@@ -121,9 +134,10 @@ else
                 PhoneNumber = args.PhoneNumber,
                 SeatId = seat.Id
             };
-        // var saveReservationResult = ReservationForView is null ?
-        //     await ReservationService.AddAsync(reservation) : await ReservationService.UpdateAsync(reservation);
-        var saveReservationResult = await ReservationService.AddAsync(reservation);
+        var addingNewScreening = ReservationForView is null;
+        var (saveReservationResult, successMessage) = addingNewScreening ?
+            (await ReservationService.AddAsync(reservation), "Successfuly added screening") :
+            (await ReservationService.UpdateAsync(reservation), "Successfuly updated screening");
         var savedReservation = saveReservationResult.ReturnOrDoIfFailed(
             e =>
             {
@@ -135,12 +149,48 @@ else
         {
             return;
         }
-        DialogService.Close(true);
+        reservationFrom = new()
+            {
+                Name = savedReservation.Name,
+                Surname = savedReservation.Surname,
+                PhoneNumber = savedReservation.PhoneNumber
+            };
+        reservationModified = true;
+        NotificationService.NotifySuccess(successMessage);
     }
 
     void Reset()
     {
         reservationFrom = new();
+    }
+
+    async Task RemoveReservationAsync()
+    {
+        var removeReservation = await DialogService.Confirm(
+            "Are you sure to remove this reservation",
+            "Removing reservation",
+            new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+        if (removeReservation == false)
+        {
+            return;
+        }
+    }
+
+    async Task CloseDialogAsync()
+    {
+        if (!unsavedChangesExists)
+        {
+            DialogService.Close(reservationModified);
+            return;
+        }
+        var closeDialogConfirmation = await DialogService.Confirm(
+            "Are you sure to exit without saving changes",
+            "Exiting",
+            new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+        if (closeDialogConfirmation == true)
+        {
+            DialogService.Close(reservationModified);
+        }
     }
 
     class ReservationFrom

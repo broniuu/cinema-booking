@@ -3,6 +3,7 @@ using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace CinemaBooking.Web.UnitTests.Services;
@@ -118,6 +119,7 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
                 Name = "test screening"
             })), default
         );
+        logger.ReceivedLogError("first error message");
     }
 
     [Fact]
@@ -149,6 +151,7 @@ public sealed class ScreeningService_AddAsyncTest : IDisposable
         var addedScreeningResult = await screeningService.AddAsync(fakeScreening);
         // Then
         addedScreeningResult.ShouldBeFaultedWithMessage("Error occured while adding screening");
+        logger.ReceivedLogError<DbUpdateConcurrencyException>("Error occured while adding screening");
         dbContext.Screenings.Should().BeEquivalentTo(Array.Empty<object>());
     }
 

@@ -108,15 +108,16 @@
 
     async Task OpenReservationDialogAsync(SeatForView seat)
     {
+        var dialogTitle = seat.Reservation is null ? "Add reservation" : "Modify reservation";
         var screeningModified = (bool?)await DialogService.OpenAsync<AddReservationPage>(
-            "Add reservation",
+            dialogTitle,
             new Dictionary<string, object>()
                 {
                     ["Seat"] = seat,
                     ["ScreeningId"] = screening.Id,
                     ["ReservationForView"] = seat.Reservation!
                 },
-            new DialogOptions() { Width = "500px", Height = "fit-contnent", Resizable = true, Draggable = true });
+            new DialogOptions() { Width = "500px", Height = "fit-contnent", Resizable = true, Draggable = true, ShowClose = false  });
 
         if (screeningModified == true)
         {

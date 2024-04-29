@@ -81,7 +81,8 @@ public sealed class ScreeningService_DeleteAsyncTest : IDisposable
         //When
         var result = await sut.RemoveAsync(fakeScreening);
         //Then
-        result.IsFaulted.Should().BeTrue();
+        result.ShouldBeFaultedWithMessage("Error occured while removing screening");
         dbContext.Screenings.Should().BeEquivalentTo([fakeScreening]);
+        logger.ReceivedLogError<DbUpdateConcurrencyException>("Error occured while removing screening");
     }
 }
