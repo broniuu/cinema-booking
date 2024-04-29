@@ -100,6 +100,7 @@ else
     bool reservationModified;
     bool unsavedChangesExists;
     string saveErrorMessage = string.Empty;
+    Guid reservationId;
 
     protected override void OnInitialized()
     {
@@ -120,6 +121,7 @@ else
                 Surname = ReservationForView.Surname,
                 PhoneNumber = ReservationForView.PhoneNumber
             };
+        reservationId = ReservationForView.Id;
 
     }
 
@@ -127,14 +129,14 @@ else
     {
         var reservation = new Reservation
             {
-                Id = ReservationForView?.Id ?? Guid.NewGuid(),
+                Id = reservationId == Guid.Empty ? Guid.NewGuid() : reservationId,
                 Name = args.Name,
                 Surname = args.Surname,
                 ScreeningId = ScreeningId,
                 PhoneNumber = args.PhoneNumber,
                 SeatId = seat.Id
             };
-        var addingNewScreening = ReservationForView is null;
+        var addingNewScreening = reservationId == Guid.Empty;
         var (saveReservationResult, successMessage) = addingNewScreening ?
             (await ReservationService.AddAsync(reservation), "Successfuly added screening") :
             (await ReservationService.UpdateAsync(reservation), "Successfuly updated screening");
@@ -149,6 +151,7 @@ else
         {
             return;
         }
+        reservationId = savedReservation.Id;
         reservationFrom = new()
             {
                 Name = savedReservation.Name,
@@ -156,6 +159,7 @@ else
                 PhoneNumber = savedReservation.PhoneNumber
             };
         reservationModified = true;
+        unsavedChangesExists = false;
         NotificationService.NotifySuccess(successMessage);
     }
 
@@ -174,6 +178,19 @@ else
         {
             return;
         }
+        var result = await ReservationService.RemoveAsync(reservationId);
+        result.Match(
+        s =>
+        {
+            DialogService.Close(true);
+            return s;
+        },
+        e =>
+        {
+            saveErrorMessage = e.Message;
+            saveErrorMessageVisible = true;
+            return false;
+        });
     }
 
     async Task CloseDialogAsync()

@@ -23,9 +23,18 @@ public class ReservationService(IDbContextFactory<CinemaDbContext> dbContextFact
         return _cudService.UpdateAsync(reservation, "Error occured while updating reservation");
     }
 
-    public virtual Task<Result<bool>> RemoveAsync(Reservation reservation)
+    public virtual async Task<Result<bool>> RemoveAsync(Guid id)
     {
-        return _cudService.RemoveAsync(reservation, "Error occured while removing reservation");
+        var reservation = new Reservation { 
+            Id = id, 
+            Name = string.Empty,
+            ScreeningId = Guid.Empty,
+            SeatId = Guid.Empty,
+            Surname = string.Empty,
+            PhoneNumber = string.Empty,
+        };
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        return await _cudService.RemoveAsync(dbContext, reservation, "Error occured while removing reservation");
     }
 }
     

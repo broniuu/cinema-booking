@@ -35,7 +35,7 @@ public class GenericCudService<TEntity>(
         {
             await dbContext.SaveChangesAsync();
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "{Message}", errorMessage);
             return new Result<T>(new Exception(errorMessage));
@@ -53,14 +53,23 @@ public class GenericCudService<TEntity>(
             return new Result<TEntity?>(new Exception(errorMessage));
         }
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        dbContext.Attach(entity);
         dbContext.Entry(entity).State = EntityState.Modified;
         return await SaveChangesAsync(dbContext, entity, dbCouncurencyErrorMessage);
     }
 
-    public virtual async Task<Result<bool>> RemoveAsync(TEntity screening, string dbCouncurencyErrorMessage)
+    public virtual async Task<Result<bool>> RemoveAsync(TEntity entity, string dbCouncurencyErrorMessage)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        dbContext.Set<TEntity>().Remove(screening);
+        dbContext.Attach(entity);
+        dbContext.Set<TEntity>().Remove(entity);
+        return await SaveChangesAsync(dbContext, true, dbCouncurencyErrorMessage);
+    }
+
+    public virtual async Task<Result<bool>> RemoveAsync(CinemaDbContext dbContext, TEntity entity, string dbCouncurencyErrorMessage)
+    {
+        dbContext.Attach(entity);
+        dbContext.Set<TEntity>().Remove(entity);
         return await SaveChangesAsync(dbContext, true, dbCouncurencyErrorMessage);
     }
 }

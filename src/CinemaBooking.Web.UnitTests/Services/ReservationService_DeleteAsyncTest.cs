@@ -69,7 +69,7 @@ public sealed class ReservationService_DeleteAsyncTest : IDisposable
         await dbContext.AddAsync(fakeReservation);
         await dbContext.SaveChangesAsync();
         //When
-        var result = await sut.RemoveAsync(fakeReservation);
+        var result = await sut.RemoveAsync(Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"));
         //Then
         result.ShouldBeFaultedWithMessage("Error occured while removing reservation");
         logger.ReceivedLogError<DbUpdateConcurrencyException>("Error occured while removing reservation");
@@ -122,7 +122,7 @@ public sealed class ReservationService_DeleteAsyncTest : IDisposable
         await dbContext.AddAsync(fakeReservation);
         await dbContext.SaveChangesAsync();
         //When
-        var result = await sut.RemoveAsync(fakeReservation);
+        var result = await sut.RemoveAsync(Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"));
         //Then
         result.IsSuccess.Should().BeTrue();
         dbContext.Reservations.Should().BeEmpty();
