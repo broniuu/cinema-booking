@@ -22,5 +22,10 @@ public class ReservationService(IDbContextFactory<CinemaDbContext> dbContextFact
         reservation.PhoneNumber = reservation.PhoneNumber.RemoveSpaces();
         return _cudService.UpdateAsync(reservation, "Error occured while updating reservation");
     }
+
+    public virtual Task<Result<bool>> RemoveAsync(Reservation reservation)
+    {
+        return _cudService.RemoveAsync(reservation, "Error occured while removing reservation");
+    }
 }
     

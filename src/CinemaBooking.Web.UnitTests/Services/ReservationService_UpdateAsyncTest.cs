@@ -4,11 +4,6 @@ using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentValidation.Results;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.UnitTests.Services;
@@ -28,7 +23,7 @@ public class ReservationService_UpdateAsyncTest : IDisposable
     }
 
     [Fact]
-    public async Task WhenAddingEntity_ThenSaveItToDb()
+    public async Task WhenUpdatingEntity_ThenSaveItToDb()
     {
         // Given
         var dbContextFactory = _sqliteProvider.CreateDbContextFactory();
