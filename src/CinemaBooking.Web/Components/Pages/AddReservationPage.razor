@@ -41,7 +41,7 @@ else
                 </div>
             </div>
         }
-        else
+        else if (reservationId != Guid.Empty)
         {
             <div style="width: 400px;" class="mx-auto d-flex justify-content-center">
                 <RadzenButton Click="() => RemoveReservationAsync()" Icon="delete" Text="Remove reservation" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" />
@@ -165,6 +165,7 @@ else
 
     void Reset()
     {
+        unsavedChangesExists = false;
         reservationFrom = new();
     }
 
