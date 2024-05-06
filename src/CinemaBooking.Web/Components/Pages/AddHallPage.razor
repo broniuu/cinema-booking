@@ -10,6 +10,10 @@
 <RadzenRow class="h-100" Gap="1rem">
     <RadzenColumn Size="3" class="rz-background-color-info-lighter rz-color-on-info-lighter rz-p-5 d-flex justify-content-center align-items-center">
         <RadzenCard class="d-flex flex-column align-items-center">
+            <div class="rz-p-sm-12 rz-text-align-center">
+                <RadzenLabel Text="Select Delimiter" Component="DropDownBindValue" Style="margin-right: 8px; vertical-align: middle;" />
+                <RadzenDropDown @bind-Value=@selectedDelimiterKey Data=@delimiters.Keys Name="DropDownBindValue" />
+            </div>
             <RadzenText TextStyle="TextStyle.H5">Select CSV file with seats configuration to create a hall</RadzenText>
             <label class="custom-file-upload">
                 <InputFile OnChange="LoadHallAsync" accept=".csv" />
@@ -48,8 +52,16 @@
 </style>
 
 @code {
-    private const long maxFileSize = 1024 * 15;
-    private HallPreview? hallPreview;
+    const long MaxFileSize = 1024 * 15;
+    HallPreview? hallPreview;
+    Dictionary<string, string> delimiters = new()
+    {
+        {"tab", "\t"},
+        {",", ","},
+        {";", ";"},
+        {"space", " "},
+    };
+    string selectedDelimiterKey = "tab";
 
     async Task LoadHallAsync(InputFileChangeEventArgs e)
     {
@@ -71,7 +83,15 @@
             Utilities.GetAppLocalDataFolderPath(),
             trustedFileName);
         await CopyFileAsync(file, path);
-        hallPreview = SeatsParser.ParseAsHallPreview(path);
+        try
+        {
+            hallPreview = SeatsParser.ParseAsHallPreview(path, delimiters[selectedDelimiterKey]);
+        } catch (Exception ex)
+        {
+            Logger.LogError("{Error}", ex);
+            NotficationService.NotifyError("Cannot proccess file");
+        }
+
 
     }
 
@@ -80,7 +100,7 @@
         try
         {
             await using FileStream fs = new(path, FileMode.Create);
-            await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+            await file.OpenReadStream(MaxFileSize).CopyToAsync(fs);
         }
         catch (Exception ex)
         {

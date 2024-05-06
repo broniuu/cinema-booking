@@ -45,11 +45,11 @@ internal class SeatsParser
         }
     }
 
-    internal static HallPreview ParseAsHallPreview(string csvFilePath)
+    internal static HallPreview ParseAsHallPreview(string csvFilePath, string delimiter)
     {
         using var parser = new TextFieldParser(csvFilePath);
         parser.TextFieldType = FieldType.Delimited;
-        parser.SetDelimiters(Delimiter);
+        parser.SetDelimiters(delimiter);
         var rows = new List<RowPreview>();
         for (var rowNumber = 1; !parser.EndOfData; ++rowNumber)
         {
