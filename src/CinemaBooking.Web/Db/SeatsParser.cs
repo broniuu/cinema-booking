@@ -34,7 +34,7 @@ internal class SeatsParser
                     Id = Guid.NewGuid(),
                     PositionX = columnNumber,
                     PositionY = rowNumber,
-                    SeatNumber = field,
+                    SeatNumber = fieldValidatedForDisabled,
                     IsForDisabled = isForDisabled,
                 };
                 yield return seat;

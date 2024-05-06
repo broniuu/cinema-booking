@@ -1,0 +1,220 @@
+﻿@using CinemaBooking.Web.Db.Entitites
+@using CinemaBooking.Web.Extensions
+@using System.Text.RegularExpressions
+
+@inject ILogger<AddReservationPage> Logger
+@inject DialogService DialogService
+@inject ReservationService ReservationService
+@inject NotificationService NotificationService
+
+
+<style>
+    .close-error-message {
+        margin-right: 10px;
+        float: right;
+        width: 30px;
+        text-align: center;
+        height: 20px;
+        font-size: 12px;
+    }
+</style>
+
+@if (unexpectedErrorMessageVisible)
+{
+    <RadzenStack JustifyContent="JustifyContent.Center">
+        <RadzenText TextStyle="TextStyle.H6" class="p-5">Unexcpected error occured</RadzenText>
+        <RadzenButton Click="() => DialogService.Close(false)" Text="Close" />
+    </RadzenStack>
+}
+else
+{
+    <div class="d-flex flex-column justify-content-center">
+        @if (saveErrorMessageVisible)
+        {
+            <div style="width: 400px;" class="mx-auto">
+                <div class="border rz-border-radius rz-border-color-danger-darker p-2">
+                    <RadzenText Style="color: var(--rz-danger)" Text="@saveErrorMessage" />
+                </div>
+                <div class="close-error-message rz-color-danger pt-0 pb-0 p-1">
+                    <RadzenButton Click="() => saveErrorMessageVisible = false" Variant="Variant.Outlined" Icon="@("<i class=\"fa-solid fa-xmark\"></i>")"
+                                  ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" Style="border-radius: 0 0 var(--rz-border-radius) var(--rz-border-radius);" />
+                </div>
+            </div>
+        }
+        else if (reservationId != Guid.Empty)
+        {
+            <div style="width: 400px;" class="mx-auto d-flex justify-content-center">
+                <RadzenButton Click="() => RemoveReservationAsync()" Icon="delete" Text="Remove reservation" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" />
+            </div>
+        }
+        <RadzenTemplateForm TItem="ReservationFrom" Data=@reservationFrom Submit="SaveReservationAsync">
+            <RadzenCard class="my-4 mx-auto" Style="width: 400px;">
+                <RadzenText TextStyle="TextStyle.H6">Seat: @seat.SeatNumber</RadzenText>
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Phone number</RadzenText>
+                <RadzenTextBox Placeholder="+48 000 000 000" Name="Phone" @bind-Value=@reservationFrom.PhoneNumber Change="_ => unsavedChangesExists = true"
+                               Style="width: 100%;" aria-label="Phone" />
+                <div style="height: 1px">
+                    <RadzenRequiredValidator Component="Phone" Text="Field can not be empty" />
+                    <RadzenRegexValidator Component="Phone" Text="This is not valid phone number" Pattern="@(@"^\s*\+?\d+(?:\s\d+)*\s*")" />
+                </div>
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Name</RadzenText>
+                <RadzenTextBox Placeholder="John" Name="Name" @bind-Value=@reservationFrom.Name
+                               Style="width: 100%;" aria-label="Name" Change="_ => unsavedChangesExists = true" />
+                <div style="height: 1px">
+                    <RadzenRequiredValidator Component="Name" Text="Field can not be empty" />
+                </div>
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Surname</RadzenText>
+                <RadzenTextBox Placeholder="Kowalski" Name="Surname" @bind-Value=@reservationFrom.Surname
+                               Style="width: 100%;" aria-label="Surname" Change="_ => unsavedChangesExists = true" />
+                <div style="height: 1px">
+                    <RadzenRequiredValidator Component="Surname" Text="Field can not be empty" />
+                </div>
+                <div class="row">
+                    <div class="col-md-12 d-flex align-items-end justify-content-left mt-4">
+                        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Save" />
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" Click="Reset"
+                                      Icon="cancel" style="margin-left: 10px;" Text="Reset" />
+                    </div>
+                </div>
+            </RadzenCard>
+        </RadzenTemplateForm>
+        <RadzenButton Click="CloseDialogAsync" ButtonStyle="ButtonStyle.Danger" Text="Close" />
+    </div>
+}
+
+@code {
+    [Parameter]
+    public SeatForView? Seat { get; set; }
+
+    [Parameter]
+    public Guid ScreeningId { get; set; }
+
+    [Parameter]
+    public ReservationForView? ReservationForView { get; set; }
+
+    ReservationFrom reservationFrom = new();
+    SeatForView seat = null!;
+
+    bool unexpectedErrorMessageVisible;
+    bool saveErrorMessageVisible;
+    bool reservationModified;
+    bool unsavedChangesExists;
+    string saveErrorMessage = string.Empty;
+    Guid reservationId;
+
+    protected override void OnInitialized()
+    {
+        if (Seat is null)
+        {
+            unexpectedErrorMessageVisible = true;
+            Logger.LogError($"{nameof(Seat)} is null");
+            return;
+        }
+        seat = Seat;
+        if (ReservationForView is null)
+        {
+            return;
+        }
+        reservationFrom = new()
+            {
+                Name = ReservationForView.Name,
+                Surname = ReservationForView.Surname,
+                PhoneNumber = ReservationForView.PhoneNumber
+            };
+        reservationId = ReservationForView.Id;
+
+    }
+
+    async Task SaveReservationAsync(ReservationFrom args)
+    {
+        var reservation = new Reservation
+            {
+                Id = reservationId == Guid.Empty ? Guid.NewGuid() : reservationId,
+                Name = args.Name,
+                Surname = args.Surname,
+                ScreeningId = ScreeningId,
+                PhoneNumber = args.PhoneNumber,
+                SeatId = seat.Id
+            };
+        var addingNewScreening = reservationId == Guid.Empty;
+        var (saveReservationResult, successMessage) = addingNewScreening ?
+            (await ReservationService.AddAsync(reservation), "Successfuly added screening") :
+            (await ReservationService.UpdateAsync(reservation), "Successfuly updated screening");
+        var savedReservation = saveReservationResult.ReturnOrDoIfFailed(
+            e =>
+            {
+                saveErrorMessage = e.Message;
+                saveErrorMessageVisible = true;
+                return null;
+            });
+        if (savedReservation is null)
+        {
+            return;
+        }
+        reservationId = savedReservation.Id;
+        reservationFrom = new()
+            {
+                Name = savedReservation.Name,
+                Surname = savedReservation.Surname,
+                PhoneNumber = savedReservation.PhoneNumber
+            };
+        reservationModified = true;
+        unsavedChangesExists = false;
+        NotificationService.NotifySuccess(successMessage);
+    }
+
+    void Reset()
+    {
+        unsavedChangesExists = false;
+        reservationFrom = new();
+    }
+
+    async Task RemoveReservationAsync()
+    {
+        var removeReservation = await DialogService.Confirm(
+            "Are you sure to remove this reservation",
+            "Removing reservation",
+            new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+        if (removeReservation == false)
+        {
+            return;
+        }
+        var result = await ReservationService.RemoveAsync(reservationId);
+        result.Match(
+        s =>
+        {
+            DialogService.Close(true);
+            return s;
+        },
+        e =>
+        {
+            saveErrorMessage = e.Message;
+            saveErrorMessageVisible = true;
+            return false;
+        });
+    }
+
+    async Task CloseDialogAsync()
+    {
+        if (!unsavedChangesExists)
+        {
+            DialogService.Close(reservationModified);
+            return;
+        }
+        var closeDialogConfirmation = await DialogService.Confirm(
+            "Are you sure to exit without saving changes",
+            "Exiting",
+            new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+        if (closeDialogConfirmation == true)
+        {
+            DialogService.Close(reservationModified);
+        }
+    }
+
+    class ReservationFrom
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Surname { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+    }
+}

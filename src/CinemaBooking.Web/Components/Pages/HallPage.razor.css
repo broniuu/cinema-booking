@@ -1,26 +1,29 @@
 ﻿.seat {
-    width: 50px;
-    height: 50px;
+    width: 70px;
+    height: 70px;
     position: relative;
     text-align: center;
-    background-color: #005586;
     color: white;
     align-content: center;
     cursor: pointer;
 }
+
+.seat:hover {
+    box-shadow: var(--rz-shadow-6);
+}
+
 .seat div{
-    font-size: 12px;
+    font-size: 20px;
     position: absolute;
     bottom: 0;
     right: 0;
-    margin: 0 4px 0 4px;
-    
+    margin: 0 4px 0 4px;    
 }
 
-.seat + .free {
-    background-color: #005586;
+.seat.free {
+    background-color: var(--rz-series-1);
 }
 
-.seat + .booked {
-    background-color: #808080;
+.seat.booked {
+    background-color: var(--rz-base-400);
 }

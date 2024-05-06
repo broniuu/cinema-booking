@@ -15,7 +15,7 @@
                 <Template Context="screening">
                     <RadzenCard Style="width: 100%; padding: 0;">
                         <RadzenRow Gap="0">
-                            <RadzenColumn Size="10" Class="rz-p-4 rz-ripple screening">
+                            <RadzenColumn Size="10" Class="@ChooseClassForScreening(screening)" @onclick="() => ChooseScreening(screening)">
                                 <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-color-secondary">@(screening.Name)</RadzenText>
                                 <RadzenText TextStyle="TextStyle.Body1" TagName="TagName.H6" class="rz-color-secondary">@(screening.Date)</RadzenText>
                             </RadzenColumn>
@@ -31,9 +31,9 @@
         </RadzenCard>
     </RadzenColumn>
 
-    <RadzenColumn>
-        <RadzenCard class="p-0" Style="height: 100%;">
-
+    <RadzenColumn Size="9">
+        <RadzenCard Style="height: 100%;">
+            <HallPage Screening=choosenScreening />
         </RadzenCard>
     </RadzenColumn>
 </RadzenRow>
@@ -44,7 +44,7 @@
         flex-flow: column;
         height: calc(var(--body-height) - var(--rz-layout-body-padding) * 2);
     }
-    
+
     .add-screening {
         flex: 0 1 auto;
     }
@@ -56,7 +56,6 @@
 
     .screening {
         min-height: 72px;
-        background-color: var(--rz-secondary-lighter);
         cursor: pointer;
     }
 
@@ -69,7 +68,7 @@
 
 @code {
     List<Screening>? screenings;
-
+    Screening? choosenScreening;
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,4 +95,13 @@
         screenings?.Remove(screeningToRemove);
         NotificationService.NotifySuccess("Deleted screening successfuly");
     }
+
+    void ChooseScreening(Screening screening)
+    {
+        choosenScreening = screening;
+    }
+
+    string ChooseClassForScreening(Screening screening) =>
+    $"rz-p-4 rz-ripple screening {(screening == choosenScreening ? "rz-background-color-primary-lighter" : "rz-secondary-lighter")}";
+
 }

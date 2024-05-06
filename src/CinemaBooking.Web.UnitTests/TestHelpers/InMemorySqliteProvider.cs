@@ -29,7 +29,7 @@ public class InMemorySqliteProvider
             throw new ArgumentNullException(nameof(_contextOptions));
         }
         return new(_contextOptions);
-    } 
+    }
 
     public IDbContextFactory<CinemaDbContext> CreateDbContextFactory()
     {
@@ -37,6 +37,15 @@ public class InMemorySqliteProvider
             throw new ArgumentNullException(nameof(_contextOptions));
         }
         return new CinemaDbContextFactory(_contextOptions);
+    }
+
+    public IDbContextFactory<CinemaDbContext> CreateFakeFailedDbContextFactory()
+    {
+        if (_contextOptions is null)
+        {
+            throw new ArgumentNullException(nameof(_contextOptions));
+        }
+        return new FakeFailedDbContextFactory(_contextOptions);
     }
 
     public void DisposeConnection() => _connection?.Dispose();
@@ -49,4 +58,22 @@ public class InMemorySqliteProvider
             return new CinemaDbContext(_options);
         }
     }
+
+    private class FakeFailedDbContextFactory(DbContextOptions<CinemaDbContext> options) : IDbContextFactory<CinemaDbContext>
+    {
+        private readonly DbContextOptions<CinemaDbContext> _options = options;
+        public CinemaDbContext CreateDbContext()
+        {
+            return new FakeFailedDbContext(_options);
+        }
+    }
+
+    private class FakeFailedDbContext(DbContextOptions<CinemaDbContext> options) : CinemaDbContext(options)
+    {
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            throw new DbUpdateConcurrencyException();
+        }
+    }
+
 }

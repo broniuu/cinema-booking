@@ -3,6 +3,8 @@ using CinemaBooking.Web.Services;
 using FluentValidation.Results;
 using FluentValidation;
 using CinemaBooking.Web.UnitTests.TestHelpers;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.UnitTests.Services;
 public sealed class ScreeningService_DeleteAsyncTest : IDisposable
@@ -27,7 +29,8 @@ public sealed class ScreeningService_DeleteAsyncTest : IDisposable
         var validator = Substitute.For<IValidator<Screening>>();
         validator.ValidateAsync(Arg.Any<Screening>())
             .Returns(new ValidationResult(new List<ValidationFailure>()));
-        var sut = new ScreeningService(dbContextFactory, validator);
+        var logger = Substitute.For<ILogger<ScreeningService>>();
+        var sut = new ScreeningService(dbContextFactory, validator, logger);
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
@@ -44,8 +47,42 @@ public sealed class ScreeningService_DeleteAsyncTest : IDisposable
         await dbContext.Screenings.AddAsync(fakeScreening);
         await dbContext.SaveChangesAsync();
         //When
-        await sut.RemoveAsync(fakeScreening);
+        var result = await sut.RemoveAsync(fakeScreening);
         //Then
+        result.IsSuccess.Should().BeTrue();
         dbContext.Screenings.Should().BeEquivalentTo(Enumerable.Empty<object>());
+    }
+
+    [Fact]
+    public async Task WhenExceptionOccuredWhileSaving_ThenRetrunException()
+    {
+        // Given
+        var dbContextFactory = _sqliteProvider.CreateFakeFailedDbContextFactory();
+        var validator = Substitute.For<IValidator<Screening>>();
+        validator.ValidateAsync(Arg.Any<Screening>())
+            .Returns(new ValidationResult(new List<ValidationFailure>()));
+        var logger = Substitute.For<ILogger<ScreeningService>>();
+        var sut = new ScreeningService(dbContextFactory, validator, logger);
+        await using var dbContext = _sqliteProvider.CreateDbContext();
+        await dbContext.Halls.AddAsync(new Hall()
+        {
+            Id = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
+            Name = "MCK"
+        });
+        var fakeScreening = new Screening()
+        {
+            Id = Guid.Parse("99af86aa-5b7a-4dbd-a702-cfbec90f744a"),
+            HallId = Guid.Parse("5eb6c229-4993-47df-83c1-4780b073ebb8"),
+            Name = "test screening",
+            Date = DateOnly.Parse("2023-06-04"),
+        };
+        await dbContext.Screenings.AddAsync(fakeScreening);
+        await dbContext.SaveChangesAsync();
+        //When
+        var result = await sut.RemoveAsync(fakeScreening);
+        //Then
+        result.ShouldBeFaultedWithMessage("Error occured while removing screening");
+        dbContext.Screenings.Should().BeEquivalentTo([fakeScreening]);
+        logger.ReceivedLogError<DbUpdateConcurrencyException>("Error occured while removing screening");
     }
 }
