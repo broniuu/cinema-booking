@@ -1,0 +1,91 @@
+﻿@page "/add-hall"
+@using CinemaBooking.Seed
+@using CinemaBooking.Web.Dtos.HallPreview
+@using CinemaBooking.Web.Extensions
+
+
+@inject ILogger<AddHallPage> Logger
+@inject NotificationService NotficationService
+
+<RadzenRow class="h-100" Gap="1rem">
+    <RadzenColumn Size="3" class="rz-background-color-info-lighter rz-color-on-info-lighter rz-p-5 d-flex justify-content-center align-items-center">
+        <RadzenCard class="d-flex flex-column align-items-center">
+            <RadzenText TextStyle="TextStyle.H5">Select CSV file with seats configuration to create a hall</RadzenText>
+            <label class="custom-file-upload">
+                <InputFile OnChange="LoadHallAsync" accept=".csv" />
+                Select file
+            </label>
+        </RadzenCard>
+    </RadzenColumn>
+    <RadzenColumn class="rz-p-5">
+        @foreach (var row in hallPreview?.Rows ?? [])
+        {
+            <div class="d-flex g-1 pd-1">
+            @foreach (var seat in row.Seats)
+            {
+                    <div class="bg-info" style="width: 50px; height: 50px;">@seat.Number</div>
+            }
+            </div>
+        }
+    </RadzenColumn>
+</RadzenRow>
+
+
+<style>
+    input[type="file"] {
+        display: none;
+        z-index: 2;
+    }
+
+    .custom-file-upload {
+        border: 1px solid var(--rz-secondary);
+        color: var(--rz-secondary);
+        display: inline-block;
+        padding: 6px 12px;
+        cursor: pointer;
+        border-radius: var(--rz-border-radius-6);
+    }
+</style>
+
+@code {
+    private const long maxFileSize = 1024 * 15;
+    private HallPreview? hallPreview;
+
+    async Task LoadHallAsync(InputFileChangeEventArgs e)
+    {
+        var file = e.GetMultipleFiles(1).SingleOrDefault();
+        if (file is null)
+        {
+            Logger.LogError("File is null");
+            NotficationService.NotifyError("Can not proccess this file");
+            return;
+        }
+        if (file.ContentType != "text/csv")
+        {
+            Logger.LogError("This is not csv file");
+            NotficationService.NotifyError("Uploaded file is not of CSV type");
+            return;
+        }
+        var trustedFileName = "hall-seats.temp.csv";
+        var path = Path.Combine(
+            Utilities.GetAppLocalDataFolderPath(),
+            trustedFileName);
+        await CopyFileAsync(file, path);
+        hallPreview = SeatsParser.ParseAsHallPreview(path);
+
+    }
+
+    async Task CopyFileAsync(IBrowserFile file, string path)
+    {
+        try
+        {
+            await using FileStream fs = new(path, FileMode.Create);
+            await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("{Error}", ex);
+            NotficationService.NotifyError("Cannot proccess file");
+        }
+    }
+}

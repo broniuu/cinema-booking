@@ -23,7 +23,7 @@ public static class Config
     public static IServiceCollection AddDbContextFactory(this IServiceCollection services) => services
         .AddDbContextFactory<CinemaDbContext>(o =>
             {
-                string dbPathDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CinemaBooking");
+                string dbPathDirectoryPath = Utilities.GetAppLocalDataFolderPath();
                 Directory.CreateDirectory(dbPathDirectoryPath);
                 var dbPath = Path.Combine(dbPathDirectoryPath, "cinemaBookingData.db");
                 o.UseSqlite($"Data Source={dbPath};");
