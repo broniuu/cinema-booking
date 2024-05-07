@@ -1,4 +1,5 @@
-﻿using LanguageExt.Common;
+﻿using CinemaBooking.Web.Exceptions;
+using LanguageExt.Common;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -17,4 +18,8 @@ public static partial class SystemExtensions
         return result.Match(x => x, errorfunc);
     }
     public static string RemoveSpaces(this string source) => SpaceRegex().Replace(source, "");
+
+    public static void LogError(this ILogger logger, Exception? exception) => logger.LogError(exception, "");
+
+    public static void LogErrorWithStackTrace(this ILogger logger, string message) => logger.LogError(new ExceptionWithStackTrace(message));
 }

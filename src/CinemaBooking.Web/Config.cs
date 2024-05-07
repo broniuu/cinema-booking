@@ -1,4 +1,5 @@
 ﻿using Blazored.Toast;
+using CinemaBooking.Seed;
 using CinemaBooking.Web.Db;
 using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Services;
@@ -14,7 +15,9 @@ public static class Config
         .AddScoped<HallService>()
         .AddScoped<ReservationService>()
         .AddScoped<ScreeningService>()
-        .AddScoped<GuidService>();
+        .AddScoped<GuidService>()
+        .AddScoped<SeatsParser>()
+        .AddScoped<ParseSeatsService>();
 
     public static IServiceCollection AddValidators(this IServiceCollection services) => services
         .AddScoped<IValidator<Screening>, ScreeningValidator>()

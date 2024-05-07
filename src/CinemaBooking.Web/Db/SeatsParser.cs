@@ -1,18 +1,33 @@
 ﻿using CinemaBooking.Seed.Dtos;
 using CinemaBooking.Seed.Exceptions;
+using CinemaBooking.Web;
 using CinemaBooking.Web.Dtos.HallPreview;
+using LanguageExt.Common;
 using Microsoft.VisualBasic.FileIO;
 
 namespace CinemaBooking.Seed;
-internal class SeatsParser
+public class SeatsParser(ILogger<SeatsParser> logger)
 {
-    private const string Delimiter = "\t";
-    //Todo: Add README instruction
-    internal static IEnumerable<SeatFromParsingDto> Parse(string csvFilePath)
+    public static readonly Dictionary<string, string> AvailableDelimiters = new()
     {
-        using var parser = new TextFieldParser(csvFilePath);
+        {"tab", "\t"},
+        {",", ","},
+        {";", ";"},
+        {"space", " "},
+    };
+    private readonly ILogger<SeatsParser> _logger = logger;
+
+    public Result<List<SeatFromParsingDto>?> Parse(string filePath, string delimiter)
+    {
+        if (!IsValidDelimiter(delimiter))
+        {
+            _logger.LogErrorWithStackTrace("Passed delimiter is not valid");
+            return new Result<List<SeatFromParsingDto>?>(new Exception("Passed delimiter is not valid"));
+        }
+        using var parser = new TextFieldParser(filePath);
         parser.TextFieldType = FieldType.Delimited;
-        parser.SetDelimiters(Delimiter);
+        parser.SetDelimiters(delimiter);
+        var seats = new List<SeatFromParsingDto>();
         for (var rowNumber = 1; !parser.EndOfData; ++rowNumber)
         {
             //Process row
@@ -29,7 +44,8 @@ internal class SeatsParser
                 var fieldValidatedForDisabled = isForDisabled ? field[..^1] : field;
                 if (!int.TryParse(fieldValidatedForDisabled, out _))
                 {
-                    throw new SeatsParsingException($"field contains wrong data: \"{field}\"");
+                    _logger.LogError("field contains wrong data: \"{Field}\"", field);
+                    return new Result<List<SeatFromParsingDto>?>(new Exception("File contains not valid data"));
                 }
                 var seat = new SeatFromParsingDto()
                 {
@@ -39,14 +55,21 @@ internal class SeatsParser
                     SeatNumber = fieldValidatedForDisabled,
                     IsForDisabled = isForDisabled,
                 };
-                yield return seat;
+                seats.Add(seat);
                 ++columnNumber;
             }
         }
+        return seats;
     }
+    private static bool IsValidDelimiter(string delimiter) => AvailableDelimiters.ContainsValue(delimiter);
 
-    internal static HallPreview ParseAsHallPreview(string csvFilePath, string delimiter)
+    public Result<HallPreview?> ParseAsHallPreview(string csvFilePath, string delimiter)
     {
+        if (!IsValidDelimiter(delimiter))
+        {
+            _logger.LogErrorWithStackTrace("Passed delimiter is not valid");
+            return new Result<HallPreview?>(new Exception("Passed delimiter is not valid"));
+        }
         using var parser = new TextFieldParser(csvFilePath);
         parser.TextFieldType = FieldType.Delimited;
         parser.SetDelimiters(delimiter);
@@ -66,7 +89,8 @@ internal class SeatsParser
                 var fieldValidatedForDisabled = isForDisabled ? field[..^1] : field;
                 if (!int.TryParse(fieldValidatedForDisabled, out _))
                 {
-                    throw new SeatsParsingException($"field contains wrong data: \"{field}\"");
+                    _logger.LogErrorWithStackTrace($"field contains wrong data: \"{field}\"");
+                    return new Result<HallPreview?>(new SeatsParsingException("File contains not valid data"));
                 }
                 seatsInRow.Add(new SeatPreview(fieldValidatedForDisabled, isForDisabled));
             }

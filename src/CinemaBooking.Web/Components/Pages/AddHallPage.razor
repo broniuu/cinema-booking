@@ -3,34 +3,73 @@
 @using CinemaBooking.Web.Dtos.HallPreview
 @using CinemaBooking.Web.Extensions
 
-
-@inject ILogger<AddHallPage> Logger
+@implements IDisposable
 @inject NotificationService NotficationService
+@inject ParseSeatsService SeatsParseService
 
 <RadzenRow class="h-100" Gap="1rem">
-    <RadzenColumn Size="3" class="rz-background-color-info-lighter rz-color-on-info-lighter rz-p-5 d-flex justify-content-center align-items-center">
+    <RadzenColumn Size="4" class="rz-p-5 d-flex justify-content-center align-items-center">
         <RadzenCard class="d-flex flex-column align-items-center">
-            <div class="rz-p-sm-12 rz-text-align-center">
-                <RadzenLabel Text="Select Delimiter" Component="DropDownBindValue" Style="margin-right: 8px; vertical-align: middle;" />
-                <RadzenDropDown @bind-Value=@selectedDelimiterKey Data=@delimiters.Keys Name="DropDownBindValue" />
+            <RadzenText TextStyle="TextStyle.H5">Select CSV file with seats configuration to save a hall</RadzenText>
+            <div class="d-flex align-items-center">
+                <label class="custom-file-upload">
+                    <InputFile OnChange="LoadHallAsync" accept=".csv" />
+                    Select file
+                </label>
+                <div class="rz-p-6 rz-text-align-center">
+                    <RadzenLabel Text="Select Delimiter" Component="DropDownBindValue" Style="margin-right: 8px; vertical-align: middle;" />
+                    <RadzenDropDown @bind-Value=@selectedDelimiterKey Data=@SeatsParser.AvailableDelimiters.Keys Name="DropDownBindValue" Style="color: var(--rz-text-color);" />
+                </div>
             </div>
-            <RadzenText TextStyle="TextStyle.H5">Select CSV file with seats configuration to create a hall</RadzenText>
-            <label class="custom-file-upload">
-                <InputFile OnChange="LoadHallAsync" accept=".csv" />
-                Select file
-            </label>
+            <div class="w-100 p-2 d-flex align-items-center">
+                @if (selectedFileName is not null)
+                {
+                    <RadzenText>Selected file: <strong>@selectedFileName</strong></RadzenText>
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Size="ButtonSize.Small"
+                                  class="ms-2" Click="RemoveLoadedFile" />
+                }
+                else
+                {
+                    <RadzenText>No selected file</RadzenText>
+                }
+            </div>
+            <RadzenButton Click="ShowHallPreview" Text="Show preview" ButtonStyle="ButtonStyle.Info" Style="width: 100%;" Disabled="!fileIsSelected" />
         </RadzenCard>
     </RadzenColumn>
-    <RadzenColumn class="rz-p-5">
-        @foreach (var row in hallPreview?.Rows ?? [])
-        {
-            <div class="d-flex g-1 pd-1">
-            @foreach (var seat in row.Seats)
+    <RadzenColumn Size="8">
+        <RadzenCard class="h-100 d-flex justify-content-center align-items-center">
+            @if (hallPreview is not null)
             {
-                    <div class="bg-info" style="width: 50px; height: 50px;">@seat.Number</div>
+                <div class="hall-container">
+                    <div class="hall-preview gap-1">
+                        @foreach (var seatRow in hallPreview?.Rows ?? [])
+                        {
+                            <div class="d-flex flex-row gap-1">
+                                @foreach (var seat in seatRow.Seats)
+                                {
+                                    <div class="seat">
+                                        <RadzenText TextStyle="TextStyle.H6" Style="color: white;">@seat.Number</RadzenText>
+                                        <div>
+                                            @if (seat.IsForDisabled)
+                                            {
+                                                <i class="fa-solid fa-wheelchair"></i>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
             }
-            </div>
-        }
+            else
+            {
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 gap-3">
+                    <RadzenText TextStyle="TextStyle.H2">Hall preview will apear here</RadzenText>
+                    <i class="fa-solid fa-tv fa-7x"></i>
+                </div>
+            }
+        </RadzenCard>
     </RadzenColumn>
 </RadzenRow>
 
@@ -48,64 +87,87 @@
         padding: 6px 12px;
         cursor: pointer;
         border-radius: var(--rz-border-radius-6);
+        height: fit-content;
     }
+
+    .hall-container {
+        max-height: calc(var(--body-height) - var(--rz-layout-body-padding) * 2 - var(--rz-card-padding) * 2);
+        overflow: auto;
+    }
+
+    .hall-preview {
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+    }
+
+    .seat {
+        width: 70px;
+        height: 70px;
+        position: relative;
+        text-align: center;
+        color: white;
+        align-content: center;
+        background-color: var(--rz-series-1);
+    }
+
+        .seat div {
+            font-size: 20px;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            margin: 0 4px 0 4px;
+        }
+
 </style>
 
 @code {
-    const long MaxFileSize = 1024 * 15;
     HallPreview? hallPreview;
-    Dictionary<string, string> delimiters = new()
-    {
-        {"tab", "\t"},
-        {",", ","},
-        {";", ";"},
-        {"space", " "},
-    };
+
     string selectedDelimiterKey = "tab";
+    string? selectedFileName;
+    bool fileIsSelected;
 
     async Task LoadHallAsync(InputFileChangeEventArgs e)
     {
         var file = e.GetMultipleFiles(1).SingleOrDefault();
         if (file is null)
         {
-            Logger.LogError("File is null");
             NotficationService.NotifyError("Can not proccess this file");
             return;
         }
         if (file.ContentType != "text/csv")
         {
-            Logger.LogError("This is not csv file");
             NotficationService.NotifyError("Uploaded file is not of CSV type");
             return;
         }
-        var trustedFileName = "hall-seats.temp.csv";
-        var path = Path.Combine(
-            Utilities.GetAppLocalDataFolderPath(),
-            trustedFileName);
-        await CopyFileAsync(file, path);
-        try
-        {
-            hallPreview = SeatsParser.ParseAsHallPreview(path, delimiters[selectedDelimiterKey]);
-        } catch (Exception ex)
-        {
-            Logger.LogError("{Error}", ex);
-            NotficationService.NotifyError("Cannot proccess file");
-        }
-
-
+        await SeatsParseService.CopyToTemporaryFileAsync(file);
+        selectedFileName = file.Name;
+        fileIsSelected = true;
+        hallPreview = null;
     }
 
-    async Task CopyFileAsync(IBrowserFile file, string path)
+    void ShowHallPreview()
     {
-        try
-        {
-            await using FileStream fs = new(path, FileMode.Create);
-            await file.OpenReadStream(MaxFileSize).CopyToAsync(fs);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("{Error}", ex);
-            NotficationService.NotifyError("Cannot proccess file");
-        }
+        var hallViewResult = SeatsParseService.ParseAsHallPreview(SeatsParser.AvailableDelimiters[selectedDelimiterKey]);
+        hallPreview = hallViewResult.ReturnOrDoIfFailed(
+            e =>
+            {
+                NotficationService.NotifyError(e.Message);
+                return null;
+            });
+    }
+
+    void RemoveLoadedFile()
+    {
+        SeatsParseService.DeleteTemporaryHallFile();
+        selectedFileName = null;
+        hallPreview = null;
+        fileIsSelected = false;
+    }
+
+    public void Dispose()
+    {
+        SeatsParseService.DeleteTemporaryHallFile();
     }
 }

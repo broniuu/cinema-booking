@@ -29,7 +29,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 await app.MigrateDbAsync();
-await app.FillInDatabaseAsync(app.Logger);
+if (app.Environment.IsDevelopment())
+{
+    await app.FillInDatabaseAsync(app.Logger);
+}
+
 
 app.UseHttpsRedirection();
 
