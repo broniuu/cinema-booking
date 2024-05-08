@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace CinemaBooking.Web.UnitTests.Services.Parsing;
 public sealed class SeatsParser_ParseTest : IDisposable
 {
-    private const string FakeSourceFileName = "fakeFile.csv";
+    private const string FakeSourceFileName = "SeatsParser_ParseTest.fake.csv";
 
     public void Dispose()
     {
