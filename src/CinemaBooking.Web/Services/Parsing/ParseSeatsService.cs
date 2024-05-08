@@ -1,4 +1,4 @@
-﻿using CinemaBooking.Seed;
+﻿using CinemaBooking.Web;
 using CinemaBooking.Web.Db;
 using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Dtos.HallPreview;
@@ -7,7 +7,7 @@ using LanguageExt.Common;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 
-namespace CinemaBooking.Web.Services;
+namespace CinemaBooking.Web.Services.Parsing;
 
 public sealed class ParseSeatsService(CinemaDbContext dbContext, ILogger<ParseSeatsService> logger, SeatsParser seatsParser) : IDisposable
 {

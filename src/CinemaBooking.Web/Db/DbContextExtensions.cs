@@ -1,6 +1,6 @@
-﻿using CinemaBooking.Seed;
-using CinemaBooking.Web.Db.Entitites;
+﻿using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Mappers;
+using CinemaBooking.Web.Services.Parsing;
 using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.Db;

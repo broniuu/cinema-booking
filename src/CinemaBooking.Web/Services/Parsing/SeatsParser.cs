@@ -1,11 +1,10 @@
 ﻿using CinemaBooking.Seed.Dtos;
 using CinemaBooking.Seed.Exceptions;
-using CinemaBooking.Web;
 using CinemaBooking.Web.Dtos.HallPreview;
 using LanguageExt.Common;
 using Microsoft.VisualBasic.FileIO;
 
-namespace CinemaBooking.Seed;
+namespace CinemaBooking.Web.Services.Parsing;
 public class SeatsParser(ILogger<SeatsParser> logger)
 {
     public static readonly Dictionary<string, string> AvailableDelimiters = new()
@@ -44,7 +43,7 @@ public class SeatsParser(ILogger<SeatsParser> logger)
                 var fieldValidatedForDisabled = isForDisabled ? field[..^1] : field;
                 if (!int.TryParse(fieldValidatedForDisabled, out _))
                 {
-                    _logger.LogError("field contains wrong data: \"{Field}\"", field);
+                    _logger.LogErrorWithStackTrace($"field contains wrong data: \"{field}\"");
                     return new Result<List<SeatFromParsingDto>?>(new Exception("File contains not valid data"));
                 }
                 var seat = new SeatFromParsingDto()

@@ -1,8 +1,8 @@
 ﻿using Blazored.Toast;
-using CinemaBooking.Seed;
 using CinemaBooking.Web.Db;
 using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Services;
+using CinemaBooking.Web.Services.Parsing;
 using CinemaBooking.Web.Validators;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;

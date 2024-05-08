@@ -20,7 +20,7 @@ public sealed class HallService_GetHallAsyncTest : IDisposable
         var logger = Substitute.For<ILogger<HallService>>();
         var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger);
         var result = await hallViewService.GetHallAsync();
-        logger.ReceivedLogError("Halls contains no elements");
+        logger.ReceivedLogErrorWithStackTrace("Halls contains no elements");
         result.IsFaulted.Should().BeTrue();
     }
 
