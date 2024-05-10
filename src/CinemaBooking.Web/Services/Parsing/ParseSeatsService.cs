@@ -9,16 +9,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.Services.Parsing;
 
-public sealed class ParseSeatsService(CinemaDbContext dbContext, ILogger<ParseSeatsService> logger, SeatsParser seatsParser) : IDisposable
+public sealed class ParseSeatsService(IDbContextFactory<CinemaDbContext> dbContextFactory, ILogger<ParseSeatsService> logger, SeatsParser seatsParser, ParserSeatsServiceOptions parseSeatsServiceOptions) : IDisposable
 {
-    private readonly CinemaDbContext _dbContext = dbContext;
+    private readonly IDbContextFactory<CinemaDbContext> _dbContextFactory = dbContextFactory;
     private readonly ILogger<ParseSeatsService> _logger = logger;
     private readonly SeatsParser _seatsParser = seatsParser;
-
-    private const string SeatsTemporaryFileName = "hall-seats.temp.csv";
-    private static string TemporaryHallFilePath => Path.Combine(
-        Utilities.GetAppLocalDataFolderPath(),
-        SeatsTemporaryFileName);
+    private readonly ParserSeatsServiceOptions _parseSeatsServiceOptions = parseSeatsServiceOptions;
+    private string TemporaryHallFilePath => _parseSeatsServiceOptions.TemporaryFilePath;
     private const long MaxFileSize = 1024 * 15;
 
     public Result<HallPreview?> ParseAsHallPreview(string delimiter)
@@ -36,7 +33,7 @@ public sealed class ParseSeatsService(CinemaDbContext dbContext, ILogger<ParseSe
         }
         catch (Exception ex)
         {
-            _logger.LogError("{Error}", ex);
+            _logger.LogError(ex);
             return new Result<bool>(new Exception("Unexpected error occured when coping seats"));
         }
     }
@@ -61,13 +58,14 @@ public sealed class ParseSeatsService(CinemaDbContext dbContext, ILogger<ParseSe
             {
                 return new Result<bool>(new Exception("Unexpected error occured when saving seats"));
             }
-            await _dbContext.Database.ExecuteSqlAsync($"TRUNCATE TABLE {nameof(CinemaDbContext.Halls)}");
+            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+            await dbContext.Database.ExecuteSqlAsync($"TRUNCATE TABLE {nameof(CinemaDbContext.Halls)}");
             var hall = new Hall() { Name = hallName, Id = Guid.NewGuid() };
-            await _dbContext.Halls.AddAsync(hall);
-            await _dbContext.Database.ExecuteSqlAsync($"TRUNCATE TABLE {nameof(CinemaDbContext.Seats)}");
+            await dbContext.Halls.AddAsync(hall);
+            await dbContext.Database.ExecuteSqlAsync($"TRUNCATE TABLE {nameof(CinemaDbContext.Seats)}");
             var seats = seatsFromParsing!.Select(s => s.ToEntity(hall));
-            await _dbContext.Seats.AddRangeAsync(seats);
-            await _dbContext.SaveChangesAsync();
+            await dbContext.Seats.AddRangeAsync(seats);
+            await dbContext.SaveChangesAsync();
         }
         catch (Exception ex)
         {

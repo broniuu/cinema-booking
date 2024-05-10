@@ -1,8 +1,11 @@
+using System.Runtime.CompilerServices;
 using Blazored.Toast;
 using CinemaBooking.Web;
 using CinemaBooking.Web.Components;
 using CinemaBooking.Web.Db;
 using Radzen;
+
+[assembly: InternalsVisibleTo("CinemaBooking.Web.UnitTests")]
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();

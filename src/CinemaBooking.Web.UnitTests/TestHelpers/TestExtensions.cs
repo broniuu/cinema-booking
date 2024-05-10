@@ -25,6 +25,17 @@ public static class TestExtensions
             Arg.Any<Func<object, Exception?, string>>());
     }
 
+
+    public static void ReceivedLogError<TException>(this ILogger logger, TException exception) where TException : Exception
+    {
+        logger.Received().Log(
+            LogLevel.Error,
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Is<TException>(e => e.Message == exception.Message),
+            Arg.Any<Func<object, Exception?, string>>());
+    }
+
     public static void ReceivedLogErrorWithStackTrace(this ILogger logger, string message)
     {
         logger.Received().Log(

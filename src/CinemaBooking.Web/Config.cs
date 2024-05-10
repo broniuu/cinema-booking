@@ -1,5 +1,4 @@
-﻿using Blazored.Toast;
-using CinemaBooking.Web.Db;
+﻿using CinemaBooking.Web.Db;
 using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.Services.Parsing;
@@ -17,7 +16,12 @@ public static class Config
         .AddScoped<ScreeningService>()
         .AddScoped<GuidService>()
         .AddScoped<SeatsParser>()
-        .AddScoped<ParseSeatsService>();
+        .AddScoped<ParseSeatsService>(sp => new (
+            sp.GetRequiredService<IDbContextFactory<CinemaDbContext>>(),
+            sp.GetRequiredService<ILogger<ParseSeatsService>>(),
+            sp.GetRequiredService<SeatsParser>(),
+            new ParserSeatsServiceOptions(Path.Combine(Utilities.GetAppLocalDataFolderPath(), "hall-seats.temp.csv"))
+            ));
 
     public static IServiceCollection AddValidators(this IServiceCollection services) => services
         .AddScoped<IValidator<Screening>, ScreeningValidator>()

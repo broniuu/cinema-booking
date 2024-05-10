@@ -16,7 +16,7 @@ public class SeatsParser(ILogger<SeatsParser> logger)
     };
     private readonly ILogger<SeatsParser> _logger = logger;
 
-    public Result<List<SeatFromParsingDto>?> Parse(string filePath, string delimiter)
+    public virtual Result<List<SeatFromParsingDto>?> Parse(string filePath, string delimiter)
     {
         if (!IsValidDelimiter(delimiter))
         {
@@ -62,7 +62,7 @@ public class SeatsParser(ILogger<SeatsParser> logger)
     }
     private static bool IsValidDelimiter(string delimiter) => AvailableDelimiters.ContainsValue(delimiter);
 
-    public Result<HallPreview?> ParseAsHallPreview(string csvFilePath, string delimiter)
+    public virtual Result<HallPreview?> ParseAsHallPreview(string csvFilePath, string delimiter)
     {
         if (!IsValidDelimiter(delimiter))
         {
