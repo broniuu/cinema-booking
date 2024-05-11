@@ -1,5 +1,4 @@
-﻿using CinemaBooking.Web;
-using CinemaBooking.Web.Db;
+﻿using CinemaBooking.Web.Db;
 using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Dtos.HallPreview;
 using CinemaBooking.Web.Mappers;
@@ -9,73 +8,91 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.Services.Parsing;
 
-public sealed class ParseSeatsService(IDbContextFactory<CinemaDbContext> dbContextFactory, ILogger<ParseSeatsService> logger, SeatsParser seatsParser, ParserSeatsServiceOptions parseSeatsServiceOptions) : IDisposable
+public sealed class ParseSeatsService(
+    IDbContextFactory<CinemaDbContext> dbContextFactory,
+    ILogger<ParseSeatsService> logger,
+    SeatsParser seatsParser,
+    AppDataService appDataService,
+    GuidService guidService) : IDisposable
 {
     private readonly IDbContextFactory<CinemaDbContext> _dbContextFactory = dbContextFactory;
     private readonly ILogger<ParseSeatsService> _logger = logger;
     private readonly SeatsParser _seatsParser = seatsParser;
-    private readonly ParserSeatsServiceOptions _parseSeatsServiceOptions = parseSeatsServiceOptions;
-    private string TemporaryHallFilePath => _parseSeatsServiceOptions.TemporaryFilePath;
+    private readonly AppDataService _appDataService = appDataService;
+    private readonly GuidService _guidService = guidService;
+
+    private string? _temporaryHallFilePath;
     private const long MaxFileSize = 1024 * 15;
 
     public Result<HallPreview?> ParseAsHallPreview(string delimiter)
     {
-        return _seatsParser.ParseAsHallPreview(TemporaryHallFilePath, delimiter);
+        if (_temporaryHallFilePath is null)
+        {
+            _logger.LogErrorWithStackTrace("Temporary file does not exists");
+            return new Result<HallPreview?>(new Exception("Unexpected error occured when parsing seats"));
+        }
+        return _seatsParser.ParseAsHallPreview(_temporaryHallFilePath, delimiter);
     }
+
+    private string CreateTempFilePath() => Path.Combine(_appDataService.GetTemporaryCsvFolderPath(), $"{_guidService.NewGuid()}.temp.csv");
 
     public async Task<Result<bool>> CopyToTemporaryFileAsync(IBrowserFile file)
     {
+        _temporaryHallFilePath = CreateTempFilePath();
         try
         {
-            await using FileStream fs = new(TemporaryHallFilePath, FileMode.Create);
+            await using FileStream fs = new(_temporaryHallFilePath, FileMode.Create);
             await file.OpenReadStream(MaxFileSize).CopyToAsync(fs);
             return true;
         }
         catch (Exception ex)
         {
+            File.Delete(_temporaryHallFilePath);
+            _temporaryHallFilePath = null;
             _logger.LogError(ex);
             return new Result<bool>(new Exception("Unexpected error occured when coping seats"));
         }
     }
 
-    public async Task<Result<bool>> SaveSeatsFromTempFileToDatabase(string hallName, string delimiter)
+    public async Task<Result<bool>> SaveSeatsFromTempFileToDbAsync(string hallName, string delimiter)
     {
-        if (File.Exists(TemporaryHallFilePath))
+        if (!File.Exists(_temporaryHallFilePath))
         {
-            _logger.LogError("Temporary file in {Path} does not exists", TemporaryHallFilePath);
+            _logger.LogErrorWithStackTrace("Temporary file does not exists");
             return new Result<bool>(new Exception("Unexpected error occured when saving seats"));
         }
-        try
+        return await _seatsParser.Parse(_temporaryHallFilePath, delimiter).MapResultAsync(async seatsFromParsing =>
         {
-            Exception? exception = null;
-            var seatsFromParsing = _seatsParser.Parse(TemporaryHallFilePath, delimiter)
-                .ReturnOrDoIfFailed(e =>
-                {
-                    exception = e;
-                    return null;
-                });
-            if (exception is not null)
+            try
             {
+                await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+                // Todo: If relational db will be implemented, add this code as transaction https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete#transactions
+                await dbContext.Halls.ExecuteDeleteAsync();
+                var hall = new Hall() { Name = hallName, Id = _guidService.NewGuid() };
+                await dbContext.Halls.AddAsync(hall);
+                await dbContext.Seats.ExecuteDeleteAsync();
+                var seats = seatsFromParsing!.Select(s => s.ToEntity(hall));
+                await dbContext.Seats.AddRangeAsync(seats);
+                await dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex);
                 return new Result<bool>(new Exception("Unexpected error occured when saving seats"));
             }
-            await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-            await dbContext.Database.ExecuteSqlAsync($"TRUNCATE TABLE {nameof(CinemaDbContext.Halls)}");
-            var hall = new Hall() { Name = hallName, Id = Guid.NewGuid() };
-            await dbContext.Halls.AddAsync(hall);
-            await dbContext.Database.ExecuteSqlAsync($"TRUNCATE TABLE {nameof(CinemaDbContext.Seats)}");
-            var seats = seatsFromParsing!.Select(s => s.ToEntity(hall));
-            await dbContext.Seats.AddRangeAsync(seats);
-            await dbContext.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error occured when saving seats");
-            return new Result<bool>(new Exception("Unexpected error occured when saving seats"));
-        }
-        return true;
+        });
     }
 
-    public void DeleteTemporaryHallFile() => File.Delete(TemporaryHallFilePath);
+    public void DeleteTemporaryHallFile()
+    {
+        if (_temporaryHallFilePath is null)
+        {
+            return;
+        }
+        File.Delete(_temporaryHallFilePath);
+        _temporaryHallFilePath = null;
+    }
 
     public void Dispose() => DeleteTemporaryHallFile();
 }

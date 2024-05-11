@@ -151,7 +151,7 @@
     void ShowHallPreview()
     {
         var hallViewResult = SeatsParseService.ParseAsHallPreview(SeatsParser.AvailableDelimiters[selectedDelimiterKey]);
-        hallPreview = hallViewResult.ReturnOrDoIfFailed(
+        hallPreview = hallViewResult.IfFail(
             e =>
             {
                 NotficationService.NotifyError(e.Message);

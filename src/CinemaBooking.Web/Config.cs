@@ -16,23 +16,26 @@ public static class Config
         .AddScoped<ScreeningService>()
         .AddScoped<GuidService>()
         .AddScoped<SeatsParser>()
-        .AddScoped<ParseSeatsService>(sp => new (
-            sp.GetRequiredService<IDbContextFactory<CinemaDbContext>>(),
-            sp.GetRequiredService<ILogger<ParseSeatsService>>(),
-            sp.GetRequiredService<SeatsParser>(),
-            new ParserSeatsServiceOptions(Path.Combine(Utilities.GetAppLocalDataFolderPath(), "hall-seats.temp.csv"))
-            ));
+        .AddScoped<AppDataService>()
+        .AddScoped<ParseSeatsService>();
 
     public static IServiceCollection AddValidators(this IServiceCollection services) => services
         .AddScoped<IValidator<Screening>, ScreeningValidator>()
         .AddScoped<IValidator<Reservation>, ReservationValidator>();
 
     public static IServiceCollection AddDbContextFactory(this IServiceCollection services) => services
-        .AddDbContextFactory<CinemaDbContext>(o =>
+        .AddDbContextFactory<CinemaDbContext>((sp, o )=>
             {
-                string dbPathDirectoryPath = Utilities.GetAppLocalDataFolderPath();
-                Directory.CreateDirectory(dbPathDirectoryPath);
+                var dbPathDirectoryPath = sp.GetRequiredService<AppDataService>().GetAppDataPath();
                 var dbPath = Path.Combine(dbPathDirectoryPath, "cinemaBookingData.db");
                 o.UseSqlite($"Data Source={dbPath};");
             });
+    public static IApplicationBuilder CreateAppDataDirectories(this IApplicationBuilder app)
+    {
+        using var scope = app.ApplicationServices.CreateScope();
+        var serviceProvider = scope.ServiceProvider;
+        var appDataService = serviceProvider.GetRequiredService<AppDataService>();
+        appDataService.CreateAppDataDirectories();
+        return app;
+    }
 }

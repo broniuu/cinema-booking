@@ -42,7 +42,7 @@
     async Task SaveScreeningAsync()
     {
         var hallResult = await HallService.GetHallAsync();
-        var hall = hallResult.ReturnOrDoIfFailed(e =>
+        var hall = hallResult.IfFail(e =>
         {
             DialogService.Alert(e.Message, "Error!");
             addingScrening = false;

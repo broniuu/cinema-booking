@@ -140,7 +140,7 @@ else
         var (saveReservationResult, successMessage) = addingNewScreening ?
             (await ReservationService.AddAsync(reservation), "Successfuly added screening") :
             (await ReservationService.UpdateAsync(reservation), "Successfuly updated screening");
-        var savedReservation = saveReservationResult.ReturnOrDoIfFailed(
+        var savedReservation = saveReservationResult.IfFail(
             e =>
             {
                 saveErrorMessage = e.Message;

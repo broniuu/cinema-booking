@@ -1,16 +1,19 @@
 ﻿using CinemaBooking.Web.Db;
 using CinemaBooking.Web.Dtos.HallPreview;
+using CinemaBooking.Web.Services;
 using CinemaBooking.Web.Services.Parsing;
 using CinemaBooking.Web.UnitTests.TestHelpers;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NSubstitute;
 
 namespace CinemaBooking.Web.UnitTests.Services.Parsing;
 public class ParseSeatsService_ParseAsHallPreviewTest
 {
-    private const string SeatsFileName = "ParseSeatsService_ParseAsHallPreviewTest.temp.csv";
+    private const long MaxFileSize = 1024 * 15;
     [Fact]
-    public void WhenParsing_ReturnExpectedData()
+    public async Task WhenParsing_ReturnExpectedData()
     {
         var seatsParser = GetParserMock();
         seatsParser.ParseAsHallPreview(Arg.Any<string>(), Arg.Any<string>()).Returns(
@@ -30,7 +33,15 @@ public class ParseSeatsService_ParseAsHallPreviewTest
                 ]));
         var logger = GetLoggerMock();
         var dbContextFactory = GetDbContextFactoryMock();
-        var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, GetParserSeatsServiceOptions());
+        var appDataService = GetAppDataServiceMock();
+        appDataService.GetTemporaryCsvFolderPath().Returns(string.Empty);
+        var guidService = GetGuidServiceMock();
+        guidService.NewGuid().Returns(Guid.Parse("790dfa24-d419-43cd-b0df-b61ab49dc025"));
+        var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService);
+        var fakeBrowserFile = Substitute.For<IBrowserFile>();
+        using var stream = string.Empty.ToStream();
+        fakeBrowserFile.OpenReadStream(MaxFileSize).Returns(stream);
+        await sut.CopyToTemporaryFileAsync(fakeBrowserFile);
         var result = sut.ParseAsHallPreview(",");
         result.GetOrDefault().Should().BeEquivalentTo(
             new
@@ -87,9 +98,10 @@ public class ParseSeatsService_ParseAsHallPreviewTest
                 }
             }
             );
-        seatsParser.Received().ParseAsHallPreview(SeatsFileName, ",");
+        seatsParser.Received().ParseAsHallPreview("790dfa24-d419-43cd-b0df-b61ab49dc025.temp.csv", ",");
     }
-    private static ParserSeatsServiceOptions GetParserSeatsServiceOptions() => new(SeatsFileName);
+    private static AppDataService GetAppDataServiceMock() => Substitute.For<AppDataService>();
+    private static GuidService GetGuidServiceMock() => Substitute.For<GuidService>();
     private static SeatsParser GetParserMock() => Substitute.For<SeatsParser>(Substitute.For<ILogger<SeatsParser>>());
     private static ILogger<ParseSeatsService> GetLoggerMock() => Substitute.For<ILogger<ParseSeatsService>>();
     private static IDbContextFactory<CinemaDbContext> GetDbContextFactoryMock() => Substitute.For<IDbContextFactory<CinemaDbContext>>();

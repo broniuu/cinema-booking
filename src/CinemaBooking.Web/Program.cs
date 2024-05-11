@@ -31,6 +31,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.CreateAppDataDirectories();
 await app.MigrateDbAsync();
 if (app.Environment.IsDevelopment())
 {

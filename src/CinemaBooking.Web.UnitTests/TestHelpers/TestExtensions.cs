@@ -54,4 +54,14 @@ public static class TestExtensions
 
     public static T? GetOrDefault<T>(this Result<T> source) =>
         source.Match(s => s, e => default(T));
+
+    public static Stream ToStream(this string text)
+    {
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream);
+        writer.Write(text);
+        writer.Flush();
+        stream.Position = 0;
+        return stream;
+    }
 }

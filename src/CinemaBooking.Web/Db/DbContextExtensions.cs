@@ -50,7 +50,7 @@ internal static class DbContextExtensions
             }
             var pathToSeedFile = Path.Combine(webHostEnvironment.ContentRootPath, @"Db\hall-seats.seed.csv");
             var seatsFromParsing = seatsParser.Parse(pathToSeedFile, "\t")
-                .ReturnOrDoIfFailed(e =>
+                .IfFail(e =>
                 {
                     logger.LogError(e, "Error occurred while seeding data.");
                     return null;

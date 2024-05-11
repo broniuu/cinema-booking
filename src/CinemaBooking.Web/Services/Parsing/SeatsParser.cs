@@ -23,6 +23,11 @@ public class SeatsParser(ILogger<SeatsParser> logger)
             _logger.LogErrorWithStackTrace("Passed delimiter is not valid");
             return new Result<List<SeatFromParsingDto>?>(new Exception("Passed delimiter is not valid"));
         }
+        if (!File.Exists(filePath))
+        {
+            _logger.LogError("Temporary file in {Path} does not exists", filePath);
+            return new Result<List<SeatFromParsingDto>?>(new Exception("Unexpected error occured when parsing seats"));
+        }
         using var parser = new TextFieldParser(filePath);
         parser.TextFieldType = FieldType.Delimited;
         parser.SetDelimiters(delimiter);
@@ -62,14 +67,19 @@ public class SeatsParser(ILogger<SeatsParser> logger)
     }
     private static bool IsValidDelimiter(string delimiter) => AvailableDelimiters.ContainsValue(delimiter);
 
-    public virtual Result<HallPreview?> ParseAsHallPreview(string csvFilePath, string delimiter)
+    public virtual Result<HallPreview?> ParseAsHallPreview(string filePath, string delimiter)
     {
         if (!IsValidDelimiter(delimiter))
         {
             _logger.LogErrorWithStackTrace("Passed delimiter is not valid");
             return new Result<HallPreview?>(new Exception("Passed delimiter is not valid"));
         }
-        using var parser = new TextFieldParser(csvFilePath);
+        if (!File.Exists(filePath))
+        {
+            _logger.LogError("Temporary file in {Path} does not exists", filePath);
+            return new Result<HallPreview?>(new Exception("Unexpected error occured when parsing seats"));
+        }
+        using var parser = new TextFieldParser(filePath);
         parser.TextFieldType = FieldType.Delimited;
         parser.SetDelimiters(delimiter);
         var rows = new List<RowPreview>();
