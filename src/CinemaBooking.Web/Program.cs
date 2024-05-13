@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Blazored.Toast;
 using CinemaBooking.Web;
 using CinemaBooking.Web.Components;
 using CinemaBooking.Web.Db;
@@ -16,7 +15,6 @@ builder.Logging.AddConsole();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddCinemaManagementServices()
-    .AddBlazoredToast()
     .AddRadzenComponents()
     .AddSingleton(TimeProvider.System)
     .AddValidators()

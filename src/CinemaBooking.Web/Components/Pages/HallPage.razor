@@ -1,11 +1,12 @@
 ﻿@using System.Text.Json
 @using CinemaBooking.Web.Db.Entitites
 @using CinemaBooking.Web.Dtos
+@using CinemaBooking.Web.Extensions
 @using CinemaBooking.Web.Services
 
 @inject IDbContextFactory<CinemaDbContext> DbFactory
 @inject HallService HallViewService
-@inject IToastService ToastService
+@inject NotificationService NotificationService
 @inject DialogService DialogService
 
 @if (screeningChoosen)
@@ -95,7 +96,7 @@
             h => h,
             e =>
             {
-                ToastService.ShowError("Error occured, while getting seats");
+                NotificationService.NotifyError("Error occured, while getting seats");
                 return default!;
             }
             );
