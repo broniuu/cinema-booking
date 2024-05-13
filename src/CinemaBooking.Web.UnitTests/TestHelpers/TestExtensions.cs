@@ -1,5 +1,5 @@
 ﻿using CinemaBooking.Web.Exceptions;
-using LanguageExt.Common;
+using Result;
 using Microsoft.Extensions.Logging;
 
 namespace CinemaBooking.Web.UnitTests.TestHelpers;

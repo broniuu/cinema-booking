@@ -2,7 +2,7 @@
 using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Dtos.HallPreview;
 using CinemaBooking.Web.Mappers;
-using LanguageExt.Common;
+using Result;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 

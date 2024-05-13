@@ -1,6 +1,5 @@
 ﻿using CinemaBooking.Web.Exceptions;
-using LanguageExt.Common;
-using System.Globalization;
+using Result;
 using System.Text.RegularExpressions;
 
 namespace CinemaBooking.Web;

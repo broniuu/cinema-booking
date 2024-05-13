@@ -26,7 +26,7 @@ public static class Config
     public static IServiceCollection AddDbContextFactory(this IServiceCollection services) => services
         .AddDbContextFactory<CinemaDbContext>((sp, o )=>
             {
-                var dbPathDirectoryPath = sp.GetRequiredService<AppDataService>().GetAppDataPath();
+                var dbPathDirectoryPath = new AppDataService().GetAppDataPath();
                 var dbPath = Path.Combine(dbPathDirectoryPath, "cinemaBookingData.db");
                 o.UseSqlite($"Data Source={dbPath};");
             });

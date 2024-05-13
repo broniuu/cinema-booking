@@ -2,7 +2,7 @@
 using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Dtos;
 using CinemaBooking.Web.Mappers;
-using LanguageExt.Common;
+using Result;
 using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.Services;

@@ -4,7 +4,7 @@ using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.Services.Parsing;
 using CinemaBooking.Web.UnitTests.TestHelpers;
-using LanguageExt.Common;
+using Result;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

@@ -1,7 +1,7 @@
 ﻿using CinemaBooking.Seed.Dtos;
 using CinemaBooking.Seed.Exceptions;
 using CinemaBooking.Web.Dtos.HallPreview;
-using LanguageExt.Common;
+using Result;
 using Microsoft.VisualBasic.FileIO;
 
 namespace CinemaBooking.Web.Services.Parsing;

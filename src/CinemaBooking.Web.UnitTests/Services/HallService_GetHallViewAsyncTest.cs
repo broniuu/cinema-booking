@@ -1,5 +1,4 @@
 ﻿using CinemaBooking.Web.Db.Entitites;
-using CinemaBooking.Web.Dtos;
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using Microsoft.Extensions.Logging;
