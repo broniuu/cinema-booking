@@ -8,6 +8,7 @@ using Result;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Localization;
 
 namespace CinemaBooking.Web.UnitTests.Services.Parsing;
 public sealed class ParseSeatsService_SaveSeatsFromTempFileToDbAsyncTest : IDisposable
@@ -28,7 +29,10 @@ public sealed class ParseSeatsService_SaveSeatsFromTempFileToDbAsyncTest : IDisp
         var dbContextFactory = GetDbContextFactoryMock();
         var appDataService = GetAppDataServiceMock();
         var guidService = GetGuidServiceMock();
-        using var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService);
+        var localizer = GetLocalizerMock();
+        localizer["UnexpectedErrorSaving"].Returns(new LocalizedString("UnexpectedErrorSaving","Unexpected error occured when saving seats"));
+        localizer["TempNotExists"].Returns(new LocalizedString("TempNotExists", "Temporary file does not exists"));
+        using var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService, localizer);
 
         var result = await sut.SaveSeatsFromTempFileToDbAsync("fake hall", ",");
         result.ShouldBeFaultedWithMessage("Unexpected error occured when saving seats");
@@ -47,7 +51,8 @@ public sealed class ParseSeatsService_SaveSeatsFromTempFileToDbAsyncTest : IDisp
         appDataService.GetTemporaryCsvFolderPath().Returns("");
         var guidService = GetGuidServiceMock();
         guidService.NewGuid().Returns(Guid.Parse("f4f0d6b0-b04b-4b04-8d17-285b05dc8774"));
-        using var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService);
+        var localizer = GetLocalizerMock();
+        using var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService, localizer);
         var fakeBrowserFile = Substitute.For<IBrowserFile>();
         using var stream = string.Empty.ToStream();
         fakeBrowserFile.OpenReadStream(Arg.Any<long>()).Returns(stream);
@@ -67,7 +72,9 @@ public sealed class ParseSeatsService_SaveSeatsFromTempFileToDbAsyncTest : IDisp
         appDataService.GetTemporaryCsvFolderPath().Returns("");
         var guidService = GetGuidServiceMock();
         guidService.NewGuid().Returns(Guid.Parse("5e34da89-9809-4870-9f0f-86131b009b39"));
-        using var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService);
+        var localizer = GetLocalizerMock();
+        localizer["UnexpectedErrorSaving"].Returns(new LocalizedString("UnexpectedErrorSaving", "Unexpected error occured when saving seats"));
+        using var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService, localizer);
         using var stream = string.Empty.ToStream();
         var fakeBrowserFile = Substitute.For<IBrowserFile>();
         fakeBrowserFile.OpenReadStream(MaxFileSize).Returns(stream);
@@ -155,7 +162,8 @@ public sealed class ParseSeatsService_SaveSeatsFromTempFileToDbAsyncTest : IDisp
         appDataService.GetTemporaryCsvFolderPath().Returns("");
         var guidService = GetGuidServiceMock();
         guidService.NewGuid().Returns(Guid.Parse("deb4d624-aa4b-4152-88ba-b9bc19637fa5"), Guid.Parse("d5e369b9-10d1-4fba-9d40-b9a53ae1dbf3"));
-        using var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService);
+        var localizer = GetLocalizerMock();
+        using var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService, localizer);
         using var stream = string.Empty.ToStream();
         var fakeBrowserFile = Substitute.For<IBrowserFile>();
         fakeBrowserFile.OpenReadStream(MaxFileSize).Returns(stream);
@@ -210,6 +218,8 @@ public sealed class ParseSeatsService_SaveSeatsFromTempFileToDbAsyncTest : IDisp
     private static IDbContextFactory<CinemaDbContext> GetDbContextFactoryMock() => Substitute.For<IDbContextFactory<CinemaDbContext>>();
     private static AppDataService GetAppDataServiceMock() => Substitute.For<AppDataService>();
     private static GuidService GetGuidServiceMock() => Substitute.For<GuidService>();
+
+    private static IStringLocalizer<ParseSeatsService> GetLocalizerMock() => Substitute.For<IStringLocalizer<ParseSeatsService>>();
 
     public void Dispose()
     {

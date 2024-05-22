@@ -7,7 +7,7 @@ namespace CinemaBooking.Web.Validators;
 
 public class ReservationValidator : AbstractValidator<Reservation>
 {
-    public ReservationValidator(IStringLocalizer<ScreeningsPage> localizer)
+    public ReservationValidator(IStringLocalizer<ReservationValidator> localizer)
     {
         RuleFor(r => r.Id).NotEmpty();
         RuleFor(r => r.Name).NotEmpty().WithMessage(localizer["NameNotEmpty"]);
