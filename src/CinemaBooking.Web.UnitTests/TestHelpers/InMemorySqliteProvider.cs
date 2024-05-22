@@ -72,7 +72,7 @@ public class InMemorySqliteProvider
     {
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            throw new DbUpdateConcurrencyException();
+            throw new DbUpdateConcurrencyException("concurency error");
         }
     }
 

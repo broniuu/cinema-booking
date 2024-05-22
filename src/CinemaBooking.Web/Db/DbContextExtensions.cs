@@ -1,8 +1,6 @@
-﻿using CinemaBooking.Seed;
-using CinemaBooking.Web.Db.Entitites;
+﻿using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Mappers;
-using CinemaBooking.Web.Services;
-using Microsoft.AspNetCore.Hosting;
+using CinemaBooking.Web.Services.Parsing;
 using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.Db;
@@ -28,23 +26,38 @@ internal static class DbContextExtensions
         using var scope = app.ApplicationServices.CreateAsyncScope();
         var webHostEnvironment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
         var dbContextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<CinemaDbContext>>();
+        var seatsParser = scope.ServiceProvider.GetRequiredService<SeatsParser>();
         var dbContext = await dbContextFactory.CreateDbContextAsync();
-        await dbContext.FillInHallsAsync(logger, webHostEnvironment);
+        await dbContext.FillInHallsAsync(logger, webHostEnvironment, seatsParser);
         await dbContext.FillInScreeningsAsync(logger);
         return app;
     }
 
-    private static async Task<CinemaDbContext> FillInHallsAsync(this CinemaDbContext dbContext, ILogger logger, IWebHostEnvironment webHostEnvironment)
+    private static async Task<CinemaDbContext> FillInHallsAsync(
+        this CinemaDbContext dbContext, 
+        ILogger logger, 
+        IWebHostEnvironment webHostEnvironment, 
+        SeatsParser seatsParser)
     {
         try
         {
-            var pathToSeedFile = Path.Combine(webHostEnvironment.ContentRootPath, @"Db\hall-seats.seed.csv");
-            var seatsFromParsing = SeatsParser.Parse(pathToSeedFile);
+
             var hall = await dbContext.Halls.FirstOrDefaultAsync();
             if (hall is null)
             {
-                hall = new Hall() { Name = "MCK Bobowa", Id = Guid.Parse("865f86e6-5a3d-4fbf-970f-98f8f15484f3") };
+                hall = new Hall() { Name = "MCK Bobowa", Id = Guid.NewGuid() };
                 await dbContext.Halls.AddAsync(hall);
+            }
+            var pathToSeedFile = Path.Combine(webHostEnvironment.ContentRootPath, @"Db\hall-seats.seed.csv");
+            var seatsFromParsing = seatsParser.Parse(pathToSeedFile, "\t")
+                .IfFail(e =>
+                {
+                    logger.LogError(e, "Error occurred while seeding data.");
+                    return null;
+                });
+            if (seatsFromParsing is null)
+            {
+                return dbContext;
             }
             if (!await dbContext.Seats.AnyAsync())
             {

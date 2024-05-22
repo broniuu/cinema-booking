@@ -1,0 +1,253 @@
+﻿@page "/add-hall"
+@using CinemaBooking.Seed
+@using CinemaBooking.Web.Dtos.HallPreview
+@using CinemaBooking.Web.Extensions
+@using CinemaBooking.Web.Services.Parsing
+
+@implements IDisposable
+@inject NotificationService NotficationService
+@inject ParseSeatsService SeatsParseService
+@inject DialogService DialogService
+
+<RadzenRow class="h-100" Gap="1rem">
+    <RadzenColumn Size="4" class="rz-p-5 d-flex justify-content-center align-items-center">
+        <RadzenFieldset Text="Hall info" class="d-flex flex-column align-items-center w-100">
+            <RadzenStack Gap="1rem" class="w-100">
+                <RadzenRow AlignItems="AlignItems.Center">
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenLabel Text="Hall name" Component="HallName" />
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="8">
+                        <RadzenTextBox @oninput="(args) => HallNameChanged(args.Value?.ToString())" MaxLength="maxHallNameLength" class="w-100" Name="HallName" />
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow AlignItems="AlignItems.Center">
+                    <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenLabel Text="Delimiter" Component="Delimiter" />
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="8">
+                        <RadzenDropDown @bind-Value=@selectedDelimiterKey Data=@SeatsParser.AvailableDelimiters.Keys
+                                        Style="color: var(--rz-text-color);" Name="Delimiter" />
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow AlignItems="AlignItems.Center">
+                    <RadzenLabel Text="File with hall settings" />
+                    <div class="file-container">
+                        <label class="custom-file-upload">
+                            <InputFile OnChange="LoadHallAsync" accept=".csv" />
+                            Select file
+                        </label>
+                        <div class="file-display ps-2 w-100 d-flex align-items-center">
+                            @if (selectedFileName is not null)
+                            {
+
+                                <RadzenText Style="max-width: 60%" class="rz-text-truncate"><strong>@selectedFileName</strong></RadzenText>
+                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Text" Size="ButtonSize.Small"
+                                              class="ms-2" Click="RemoveLoadedFile" />
+                            }
+                            else
+                            {
+                                <RadzenText>No selected file</RadzenText>
+                            }
+                        </div>
+                    </div>
+                </RadzenRow>
+                <RadzenButton Click="ShowHallPreview" Text="Show preview" ButtonStyle="ButtonStyle.Info" class="w-100 mt-3" Disabled="!fileIsSelected" />
+                <RadzenButton Click="SaveHallAsync" Text="Save hall" ButtonStyle="ButtonStyle.Success" class="w-100 mt-3"
+                              Disabled="!fileIsSelected || hallNameIsEmpty" />
+            </RadzenStack>
+        </RadzenFieldset>
+    </RadzenColumn>
+    <RadzenColumn Size="8">
+        <RadzenCard class="h-100 d-flex justify-content-center align-items-center">
+            @if (hallPreview is not null)
+            {
+                <div class="hall-container">
+                    <div class="hall-preview gap-1">
+                        @foreach (var seatRow in hallPreview?.Rows ?? [])
+                        {
+                            <div class="d-flex flex-row gap-1">
+                                @foreach (var seat in seatRow.Seats)
+                                {
+                                    <div class="seat">
+                                        <RadzenText TextStyle="TextStyle.H6" Style="color: white;">@seat.Number</RadzenText>
+                                        <div>
+                                            @if (seat.IsForDisabled)
+                                            {
+                                                <i class="fa-solid fa-wheelchair"></i>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 gap-3">
+                    <RadzenText TextStyle="TextStyle.H2">Hall preview will apear here</RadzenText>
+                    <i class="fa-solid fa-tv fa-7x"></i>
+                </div>
+            }
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+
+<style>
+    input[type="file"] {
+        display: none;
+        z-index: 2;
+    }
+
+    .custom-file-upload {
+        border-right: var(--rz-border-normal);
+        color: var(--rz-color-base);
+        display: inline-block;
+        padding: 6px 12px;
+        cursor: pointer;
+        height: fit-content;
+        text-align: center;
+        min-width: 120px;
+    }
+
+    .file-container {
+        width: 100%;
+        border: var(--rz-border-normal);
+        border-top-left-radius: var(--rz-border-radius-3);
+        border-radius: var(--rz-border-radius-3);
+        display: flex;
+    }
+
+    .file-display {
+        flex: 1 0 auto;
+    }
+
+    .hall-container {
+        max-height: calc(var(--body-height) - var(--rz-layout-body-padding) * 2 - var(--rz-card-padding) * 2);
+        overflow: auto;
+    }
+
+    .hall-preview {
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+    }
+
+    .seat {
+        width: 70px;
+        height: 70px;
+        position: relative;
+        text-align: center;
+        color: white;
+        align-content: center;
+        background-color: var(--rz-series-1);
+    }
+
+        .seat div {
+            font-size: 20px;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            margin: 0 4px 0 4px;
+        }
+
+    .rz-fieldset-content-wrapper {
+        width: 100% !important;
+    }
+
+</style>
+
+@code {
+    HallPreview? hallPreview;
+
+    string selectedDelimiterKey = "tab";
+    string? selectedFileName;
+    bool fileIsSelected;
+    string? hallName;
+    bool hallNameIsEmpty = true;
+    const int maxHallNameLength = 30;
+
+    async Task LoadHallAsync(InputFileChangeEventArgs e)
+    {
+        var file = e.GetMultipleFiles(1).SingleOrDefault();
+        if (file is null)
+        {
+            NotficationService.NotifyError("Can not proccess this file");
+            return;
+        }
+        if (file.ContentType != "text/csv")
+        {
+            NotficationService.NotifyError("Uploaded file is not of CSV type");
+            return;
+        }
+        await SeatsParseService.CopyToTemporaryFileAsync(file);
+        selectedFileName = file.Name;
+        fileIsSelected = true;
+        hallPreview = null;
+    }
+
+    void ShowHallPreview()
+    {
+        var hallViewResult = SeatsParseService.ParseAsHallPreview(SeatsParser.AvailableDelimiters[selectedDelimiterKey]);
+        hallPreview = hallViewResult.IfFail(
+            e =>
+            {
+                NotficationService.NotifyError(e.Message);
+                return null;
+            });
+    }
+
+    void RemoveLoadedFile()
+    {
+        SeatsParseService.DeleteTemporaryHallFile();
+        selectedFileName = null;
+        hallPreview = null;
+        fileIsSelected = false;
+    }
+
+    async Task SaveHallAsync()
+    {
+        var saveHall = await DialogService.Confirm(
+            "Are you sure, you wan't to override current hall setting? All data related to hall (including screenings, and reservations) will be deleted",
+            "Save hall",
+            new ConfirmOptions
+                {
+                    OkButtonText = "Yes",
+                    CancelButtonText = "No"
+                });
+        if (saveHall != true)
+        {
+            return;
+        }
+        var result = await SeatsParseService.SaveSeatsFromTempFileToDbAsync(hallName!, SeatsParser.AvailableDelimiters[selectedDelimiterKey]);
+        result.IfSucc(s =>
+        {
+            if (s)
+            {
+                NotficationService.NotifySuccess("Succsesfully saved the hall setting.");
+            }
+            else
+            {
+                NotficationService.NotifyError("Failed to save the hall setting.");
+            }
+        });
+        result.IfFail(e =>
+        {
+            NotficationService.NotifyError(e.Message);
+        });
+    }
+
+    public void Dispose()
+    {
+        SeatsParseService.DeleteTemporaryHallFile();
+    }
+
+    public void HallNameChanged(string? value)
+    {
+        hallName = value ?? string.Empty;
+        hallNameIsEmpty = hallName == string.Empty || hallName is null;
+    }
+}

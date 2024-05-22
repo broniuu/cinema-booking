@@ -1,5 +1,4 @@
 ﻿using CinemaBooking.Web.Db.Entitites;
-using CinemaBooking.Web.Dtos;
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using Microsoft.Extensions.Logging;
@@ -23,7 +22,7 @@ public sealed class HallService_GetHallViewAsyncTest : IDisposable
         var logger = Substitute.For<ILogger<HallService>>();
         var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger);
         var result = await hallViewService.GetHallViewAsync(Guid.Parse("815c9457-5edf-48df-bf0a-37d5981c0fbe"));
-        logger.ReceivedLogError("Halls contains no elements");
+        logger.ReceivedLogErrorWithStackTrace("Halls contains no elements");
         result.IsFaulted.Should().BeTrue();
         result.IfFail(e => e.Message.Should().Be("Error occured when getting the hall"));
     }

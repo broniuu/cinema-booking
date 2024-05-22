@@ -67,3 +67,7 @@ h1:focus {
     right: 5px !important;
     top: 0 !important;
 }
+
+.rz-dropdown-item {
+    color: var(--rz-text-color);
+}

@@ -1,7 +1,7 @@
 ﻿using CinemaBooking.Web.Db;
 using CinemaBooking.Web.Db.Entitites;
 using FluentValidation;
-using LanguageExt.Common;
+using Result;
 using Microsoft.EntityFrameworkCore;
 
 namespace CinemaBooking.Web.Services;

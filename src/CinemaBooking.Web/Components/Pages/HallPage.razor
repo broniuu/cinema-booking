@@ -1,11 +1,12 @@
 ﻿@using System.Text.Json
 @using CinemaBooking.Web.Db.Entitites
 @using CinemaBooking.Web.Dtos
+@using CinemaBooking.Web.Extensions
 @using CinemaBooking.Web.Services
 
 @inject IDbContextFactory<CinemaDbContext> DbFactory
 @inject HallService HallViewService
-@inject IToastService ToastService
+@inject NotificationService NotificationService
 @inject DialogService DialogService
 
 @if (screeningChoosen)
@@ -13,13 +14,13 @@
     if (loading)
     {
         <div class="d-flex justify-content-center align-items-center h-100">
-            <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Info" Value="100" ShowValue="false" 
-                Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+            <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Info" Value="100" ShowValue="false"
+                                       Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
         </div>
     }
     else
     {
-        <div class="d-flex flex-column h-100">
+        <div class="d-flex flex-column hall-view">
             <div class="pt-2 hall-name">
                 <div class="d-flex justify-content-center">
                     <RadzenText TextStyle="TextStyle.H2">Hall: @hallForView?.Name</RadzenText>
@@ -56,12 +57,17 @@
 
 
 <style>
+    .hall-view {
+        max-height: calc(var(--body-height) - var(--rz-layout-body-padding) * 2 - var(--rz-card-padding) * 2);
+    }
+
     .hall-name {
         flex: 0 1 auto;
     }
 
     .hall-display {
         flex: 1 1 auto;
+        overflow: auto;
     }
 </style>
 @code {
@@ -95,7 +101,7 @@
             h => h,
             e =>
             {
-                ToastService.ShowError("Error occured, while getting seats");
+                NotificationService.NotifyError("Error occured, while getting seats");
                 return default!;
             }
             );
@@ -117,7 +123,7 @@
                     ["ScreeningId"] = screening.Id,
                     ["ReservationForView"] = seat.Reservation!
                 },
-            new DialogOptions() { Width = "500px", Height = "fit-contnent", Resizable = true, Draggable = true, ShowClose = false  });
+            new DialogOptions() { Width = "500px", Height = "fit-contnent", Resizable = true, Draggable = true, ShowClose = false });
 
         if (screeningModified == true)
         {

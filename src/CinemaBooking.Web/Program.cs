@@ -1,8 +1,10 @@
-using Blazored.Toast;
+using System.Runtime.CompilerServices;
 using CinemaBooking.Web;
 using CinemaBooking.Web.Components;
 using CinemaBooking.Web.Db;
 using Radzen;
+
+[assembly: InternalsVisibleTo("CinemaBooking.Web.UnitTests")]
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -13,7 +15,6 @@ builder.Logging.AddConsole();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddCinemaManagementServices()
-    .AddBlazoredToast()
     .AddRadzenComponents()
     .AddSingleton(TimeProvider.System)
     .AddValidators()
@@ -28,8 +29,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.CreateAppDataDirectories();
 await app.MigrateDbAsync();
-await app.FillInDatabaseAsync(app.Logger);
+if (app.Environment.IsDevelopment())
+{
+    await app.FillInDatabaseAsync(app.Logger);
+}
+
 
 app.UseHttpsRedirection();
 
