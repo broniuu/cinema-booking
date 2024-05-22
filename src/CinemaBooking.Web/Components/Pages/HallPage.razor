@@ -3,11 +3,13 @@
 @using CinemaBooking.Web.Dtos
 @using CinemaBooking.Web.Extensions
 @using CinemaBooking.Web.Services
+@using Microsoft.Extensions.Localization
 
 @inject IDbContextFactory<CinemaDbContext> DbFactory
 @inject HallService HallViewService
 @inject NotificationService NotificationService
 @inject DialogService DialogService
+@inject IStringLocalizer<HallPage> Loc
 
 @if (screeningChoosen)
 {
@@ -23,10 +25,10 @@
         <div class="d-flex flex-column hall-view">
             <div class="pt-2 hall-name">
                 <div class="d-flex justify-content-center">
-                    <RadzenText TextStyle="TextStyle.H2">Hall: @hallForView?.Name</RadzenText>
+                    <RadzenText TextStyle="TextStyle.H2">@Loc["Hall"]: @hallForView?.Name</RadzenText>
                 </div>
                 <div class="d-flex justify-content-center">
-                    <RadzenText TextStyle="TextStyle.H3">Screening: @Screening?.Name</RadzenText>
+                    <RadzenText TextStyle="TextStyle.H3">@Loc["Screening"]: @Screening?.Name</RadzenText>
                 </div>
             </div>
 
@@ -101,7 +103,7 @@
             h => h,
             e =>
             {
-                NotificationService.NotifyError("Error occured, while getting seats");
+                NotificationService.NotifyError(Loc["GetHallViewErrorMessage"]);
                 return default!;
             }
             );
@@ -114,7 +116,7 @@
 
     async Task OpenReservationDialogAsync(SeatForView seat)
     {
-        var dialogTitle = seat.Reservation is null ? "Add reservation" : "Modify reservation";
+        var dialogTitle = seat.Reservation is null ? Loc["AddReservation"] : Loc["ModifyReservation"];
         var screeningModified = (bool?)await DialogService.OpenAsync<AddReservationPage>(
             dialogTitle,
             new Dictionary<string, object>()

@@ -117,16 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddHall" xml:space="preserve">
-    <value>Dodaj salę</value>
+  <data name="AddReservation" xml:space="preserve">
+    <value>Add reservation</value>
   </data>
-  <data name="AppName" xml:space="preserve">
-    <value>Aplikacja kinowa</value>
+  <data name="GetHallViewErrorMessage" xml:space="preserve">
+    <value>Error occured, while getting seats</value>
   </data>
-  <data name="Home" xml:space="preserve">
-    <value>Strona główna</value>
+  <data name="Hall" xml:space="preserve">
+    <value>Hall</value>
   </data>
-  <data name="Screenings" xml:space="preserve">
-    <value>Seanse</value>
+  <data name="ModifyReservation" xml:space="preserve">
+    <value>Modify reservation</value>
+  </data>
+  <data name="Screening" xml:space="preserve">
+    <value>Screening</value>
   </data>
 </root>
