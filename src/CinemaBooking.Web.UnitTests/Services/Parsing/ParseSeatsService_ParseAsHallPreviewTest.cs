@@ -104,7 +104,7 @@ public class ParseSeatsService_ParseAsHallPreviewTest
     }
     private static AppDataService GetAppDataServiceMock() => Substitute.For<AppDataService>();
     private static GuidService GetGuidServiceMock() => Substitute.For<GuidService>();
-    private static SeatsParser GetParserMock() => Substitute.For<SeatsParser>(Substitute.For<ILogger<SeatsParser>>());
+    private static SeatsParser GetParserMock() => Substitute.For<SeatsParser>(Substitute.For<ILogger<SeatsParser>>(), Substitute.For<IStringLocalizer<SeatsParser>>());
     private static ILogger<ParseSeatsService> GetLoggerMock() => Substitute.For<ILogger<ParseSeatsService>>();
     private static IDbContextFactory<CinemaDbContext> GetDbContextFactoryMock() => Substitute.For<IDbContextFactory<CinemaDbContext>>();
     private static IStringLocalizer<ParseSeatsService> GetLocalizerMock() => Substitute.For<IStringLocalizer<ParseSeatsService>>();
