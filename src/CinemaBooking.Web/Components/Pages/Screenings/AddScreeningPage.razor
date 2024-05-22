@@ -1,32 +1,34 @@
 ﻿@using CinemaBooking.Web.Db.Entitites
 @using CinemaBooking.Web.Extensions
+@using Microsoft.Extensions.Localization
 @inject HallService HallService
 @inject DialogService DialogService
 @inject ScreeningService ScreeningService
 @inject NotificationService NotificationService
+@inject IStringLocalizer<ScreeningsPage> Loc
 
 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem" Class="rz-p-2" Style="width: 100%;">
     @if (addingScrening)
     {
         <RadzenStack Style="width: 100%;">
-            <RadzenButton class="rz-background-color-danger" Text="Cancel" Click="() => addingScrening = false" />
+            <RadzenButton class="rz-background-color-danger" Text="@Loc["Cancel"]" Click="() => addingScrening = false" />
         </RadzenStack>
         <RadzenStack Style="width: 100%;">
-            <RadzenFormField Text="Date of screening" Variant="Variant.Text" Style="width: 100%;">
+            <RadzenFormField Text="@Loc["DateScreening"]" Variant="Variant.Text" Style="width: 100%;">
                 <RadzenDatePicker @bind-Value=@date ShowCalendarWeek />
             </RadzenFormField>
-            <RadzenFormField Text="Name of screening" Variant="Variant.Text" Style="width: 100%;">
+            <RadzenFormField Text="@Loc["NameScreening"]" Variant="Variant.Text" Style="width: 100%;">
                 <RadzenTextBox @bind-Value="@name" Style="width: 100%;" />
             </RadzenFormField>
             <RadzenButton Variant="Variant.Outlined" ButtonType="ButtonType.Submit"
-                          ButtonStyle="ButtonStyle.Success" Text="Submit" Size="ButtonSize.Small" Style="width: 100%"
+                          ButtonStyle="ButtonStyle.Success" Text="@Loc["Submit"]" Size="ButtonSize.Small" Style="width: 100%"
                           Click="SaveScreeningAsync" />
         </RadzenStack>
     }
     else
     {
         <RadzenStack Style="width: 100%;">
-            <RadzenButton Text="Add Screening" Click="() => addingScrening = true" />
+            <RadzenButton Text="@Loc["AddScreening"]" Click="() => addingScrening = true" />
         </RadzenStack>
     }
 </RadzenStack>
