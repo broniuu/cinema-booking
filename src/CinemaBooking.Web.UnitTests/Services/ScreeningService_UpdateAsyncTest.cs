@@ -5,6 +5,7 @@ using FluentValidation.Results;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace CinemaBooking.Web.UnitTests.Services;
 public sealed class ScreeningService_UpdateAsyncTest : IDisposable
@@ -27,7 +28,8 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
         validator.ValidateAsync(Arg.Any<Screening>())
             .Returns(new ValidationResult(new List<ValidationFailure>() { new("", "first error message"), new("", "second error message") }));
         var logger = Substitute.For<ILogger<ScreeningService>>();
-        var screeningService = new ScreeningService(dbContextFactory, validator, logger);
+        var localizer = Substitute.For<IStringLocalizer<ScreeningService>>();
+        var screeningService = new ScreeningService(dbContextFactory, validator, logger, localizer);
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
@@ -70,7 +72,8 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
         validator.ValidateAsync(Arg.Any<Screening>())
             .Returns(new ValidationResult(new List<ValidationFailure>()));
         var logger = Substitute.For<ILogger<ScreeningService>>();
-        var sut = new ScreeningService(dbContextFactory, validator, logger);
+        var localizer = Substitute.For<IStringLocalizer<ScreeningService>>();
+        var sut = new ScreeningService(dbContextFactory, validator, logger, localizer);
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
@@ -137,7 +140,9 @@ public sealed class ScreeningService_UpdateAsyncTest : IDisposable
         validator.ValidateAsync(Arg.Any<Screening>())
             .Returns(new ValidationResult(new List<ValidationFailure>()));
         var logger = Substitute.For<ILogger<ScreeningService>>();
-        var sut = new ScreeningService(dbContextFactory, validator, logger);
+        var localizer = Substitute.For<IStringLocalizer<ScreeningService>>();
+        var sut = new ScreeningService(dbContextFactory, validator, logger, localizer);
+        localizer["ErrorUpdate"].Returns(new LocalizedString("ErrorUpdate", "Error occured while updating screening"));
         await using var dbContext = _sqliteProvider.CreateDbContext();
         await dbContext.Halls.AddAsync(new Hall()
         {
