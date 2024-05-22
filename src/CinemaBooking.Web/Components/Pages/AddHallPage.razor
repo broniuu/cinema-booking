@@ -18,7 +18,7 @@
                         <RadzenLabel Text="Hall name" Component="HallName" />
                     </RadzenColumn>
                     <RadzenColumn Size="12" SizeMD="8">
-                        <RadzenTextBox @oninput="(args) => HallNameChanged(args.Value?.ToString())" class="w-100" Name="HallName" />
+                        <RadzenTextBox @oninput="(args) => HallNameChanged(args.Value?.ToString())" MaxLength="maxHallNameLength" class="w-100" Name="HallName" />
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow AlignItems="AlignItems.Center">
@@ -31,7 +31,8 @@
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow AlignItems="AlignItems.Center">
-                    <div class="file-container mt-2">
+                    <RadzenLabel Text="File with hall settings" />
+                    <div class="file-container">
                         <label class="custom-file-upload">
                             <InputFile OnChange="LoadHallAsync" accept=".csv" />
                             Select file
@@ -52,8 +53,8 @@
                     </div>
                 </RadzenRow>
                 <RadzenButton Click="ShowHallPreview" Text="Show preview" ButtonStyle="ButtonStyle.Info" class="w-100 mt-3" Disabled="!fileIsSelected" />
-                <RadzenButton Click="SaveHallAsync" Text="Save hall" ButtonStyle="ButtonStyle.Success" ButtonType="ButtonType.Submit" class="w-100 mt-3"
-                              Disabled="!fileIsSelected || !hallNameIsNotEmpty" />
+                <RadzenButton Click="SaveHallAsync" Text="Save hall" ButtonStyle="ButtonStyle.Success" class="w-100 mt-3"
+                              Disabled="!fileIsSelected || hallNameIsEmpty" />
             </RadzenStack>
         </RadzenFieldset>
     </RadzenColumn>
@@ -165,8 +166,9 @@
     string selectedDelimiterKey = "tab";
     string? selectedFileName;
     bool fileIsSelected;
-    string hallName = string.Empty;
-    bool hallNameIsNotEmpty = true;
+    string? hallName;
+    bool hallNameIsEmpty = true;
+    const int maxHallNameLength = 30;
 
     async Task LoadHallAsync(InputFileChangeEventArgs e)
     {
@@ -220,7 +222,7 @@
         {
             return;
         }
-        var result = await SeatsParseService.SaveSeatsFromTempFileToDbAsync(hallName, SeatsParser.AvailableDelimiters[selectedDelimiterKey]);
+        var result = await SeatsParseService.SaveSeatsFromTempFileToDbAsync(hallName!, SeatsParser.AvailableDelimiters[selectedDelimiterKey]);
         result.IfSucc(s =>
         {
             if (s)
@@ -246,6 +248,6 @@
     public void HallNameChanged(string? value)
     {
         hallName = value ?? string.Empty;
-        hallNameIsNotEmpty = hallName != string.Empty;
+        hallNameIsEmpty = hallName == string.Empty || hallName is null;
     }
 }
