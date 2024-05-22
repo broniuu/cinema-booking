@@ -3,9 +3,11 @@
 @inject IStringLocalizer<NavMenu> Loc
 
 <RadzenHeader>
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
-        <RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
-        <RadzenLabel Text="@Loc["AppName"]" Style="margin-right: 5px" />
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="0">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
+            <RadzenLabel Text="@Loc["AppName"]" Style="margin-right: 5px" />
+        </RadzenStack>
         <CultureSelector />
     </RadzenStack>
 </RadzenHeader>

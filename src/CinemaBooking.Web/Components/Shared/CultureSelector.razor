@@ -1,18 +1,14 @@
 ﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject IStringLocalizer<CultureSelector> Loc
 
-<p>
-    <label>
-        Select your locale:
-        <select @bind="selectedCulture" @bind:after="ApplySelectedCulture">
-            @foreach (var culture in supportedCultures)
-            {
-                <option value="@culture">@culture.DisplayName</option>
-            }
-        </select>
-    </label>
-</p>
+<div class="d-flex align-items-center flex-nowrap ms-3 me-3">
+    <RadzenLabel Text="@Loc["Language"]" Component="DropDownBindValue" Style="margin-right: 8px;" />
+    <RadzenDropDown @bind-Value="@selectedCulture" Change="ApplySelectedCulture" Data=@supportedCultures Style="width: 100%; max-width: 400px;" Name="DropDownBindValue" 
+        TextProperty="DisplayName" />
+</div>
 
 @code
 {
