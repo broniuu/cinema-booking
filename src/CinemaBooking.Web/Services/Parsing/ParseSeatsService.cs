@@ -61,7 +61,7 @@ public sealed class ParseSeatsService(
             _logger.LogErrorWithStackTrace("Temporary file does not exists");
             return new Result<bool>(new Exception("Unexpected error occured when saving seats"));
         }
-        return await _seatsParser.Parse(_temporaryHallFilePath, delimiter).MapResultAsync(async seatsFromParsing =>
+        return await _seatsParser.Parse(_temporaryHallFilePath, delimiter).MapAsync(async seatsFromParsing =>
         {
             try
             {
@@ -74,6 +74,8 @@ public sealed class ParseSeatsService(
                 var seats = seatsFromParsing!.Select(s => s.ToEntity(hall));
                 await dbContext.Seats.AddRangeAsync(seats);
                 await dbContext.SaveChangesAsync();
+                await dbContext.Reservations.ExecuteDeleteAsync();
+                await dbContext.Screenings.ExecuteDeleteAsync();
                 return true;
             }
             catch (Exception ex)

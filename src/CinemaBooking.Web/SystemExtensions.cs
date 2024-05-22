@@ -17,8 +17,6 @@ public static partial class SystemExtensions
         return result.Match(x => x, errorfunc);
     }
 
-    public static Task<Result<R>> MapResultAsync<A, R>(this Result<A> result, Func<A, Task<Result<R>>> func) =>
-        result.Match(s => func(s), e => Task.FromResult(new Result<R>(e)));
     public static string RemoveSpaces(this string source) => SpaceRegex().Replace(source, "");
 
     public static void LogError(this ILogger logger, Exception? exception) => logger.LogError(exception, "");
