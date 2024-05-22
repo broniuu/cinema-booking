@@ -46,7 +46,7 @@
         var hallResult = await HallService.GetHallAsync();
         var hall = hallResult.IfFail(e =>
         {
-            DialogService.Alert(e.Message, "Error!");
+            DialogService.Alert(e.Message, Loc["Error"]);
             addingScrening = false;
             return null;
         });
@@ -65,13 +65,13 @@
         var addedScreening = addedScreeningResult.Match(
             s =>
             {
-                NotificationService.NotifySuccess("Succsfully added screening!");
+                NotificationService.NotifySuccess(Loc["AddScreeningSuccess"]);
                 addingScrening = false;
                 return s;
             },
         e =>
             {
-                DialogService.Alert(e.Message, "Error!");
+                DialogService.Alert(e.Message, Loc["Error"]);
                 return null;
             });
         await OnSaveScreening.InvokeAsync(addedScreening is not null ? true : false);

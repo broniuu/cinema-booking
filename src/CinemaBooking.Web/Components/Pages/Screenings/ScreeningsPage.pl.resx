@@ -120,11 +120,17 @@
   <data name="AddScreening" xml:space="preserve">
     <value>Dodaj seans</value>
   </data>
+  <data name="AddScreeningSuccess" xml:space="preserve">
+    <value>Pomyślnie dodano seans</value>
+  </data>
   <data name="Cancel" xml:space="preserve">
     <value>Anuluj</value>
   </data>
   <data name="DateScreening" xml:space="preserve">
     <value>Data</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Błąd!</value>
   </data>
   <data name="NameScreening" xml:space="preserve">
     <value>Tytuł</value>
