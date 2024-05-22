@@ -12,6 +12,8 @@ builder.Logging.AddConsole();
 
 
 // Add services to the container.
+builder.Services.AddLocalization()
+    .AddControllers();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddCinemaManagementServices()
@@ -20,6 +22,12 @@ builder.Services.AddCinemaManagementServices()
     .AddValidators()
     .AddDbContextFactory();
 var app = builder.Build();
+
+var supportedCultures = new[] { "en-US", "pl-PL"};
+
+app.UseRequestLocalization(new RequestLocalizationOptions()
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures));
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -44,5 +52,7 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapControllers();
 
 app.Run();

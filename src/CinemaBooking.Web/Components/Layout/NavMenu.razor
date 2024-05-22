@@ -1,13 +1,18 @@
-﻿<RadzenHeader>
+﻿@using CinemaBooking.Web.Components.Shared
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<NavMenu> Loc
+
+<RadzenHeader>
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
         <RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
-        <RadzenLabel Text="Cinema App" Style="margin-right: 5px" />
+        <RadzenLabel Text="@Loc["AppName"]" Style="margin-right: 5px" />
+        <CultureSelector />
     </RadzenStack>
 </RadzenHeader>
 <RadzenSidebar @bind-Expanded="@sidebar1Expanded">
     <RadzenPanelMenu>
-        <RadzenPanelMenuItem Text="Home" Icon="home" Path="/"/>
-        <RadzenPanelMenuItem Text="Screenings" Icon="@("<i class=\"fa-solid fa-film\"></i>")" Path="/screenings"/>
+        <RadzenPanelMenuItem Text="Home" Icon="home" Path="/" />
+        <RadzenPanelMenuItem Text="Screenings" Icon="@("<i class=\"fa-solid fa-film\"></i>")" Path="/screenings" />
         <RadzenPanelMenuItem Text="Add hall" Icon="@("<i class=\"fa-solid fa-tv\"></i>")" Path="/add-hall" />
     </RadzenPanelMenu>
 </RadzenSidebar>
