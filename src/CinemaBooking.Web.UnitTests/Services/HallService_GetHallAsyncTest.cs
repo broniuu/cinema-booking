@@ -1,6 +1,7 @@
 ﻿using CinemaBooking.Web.Db.Entitites;
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace CinemaBooking.Web.UnitTests.Services;
@@ -18,7 +19,9 @@ public sealed class HallService_GetHallAsyncTest : IDisposable
     public async Task WhenHallNotExists_ThenReturnFaulted()
     {
         var logger = Substitute.For<ILogger<HallService>>();
-        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger);
+        var localizer = Substitute.For<IStringLocalizer<HallService>>();
+        localizer["ErrorGetting"].Returns(new LocalizedString("ErrorGetting", "Error occured when getting the hall"));
+        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger, localizer);
         var result = await hallViewService.GetHallAsync();
         logger.ReceivedLogErrorWithStackTrace("Halls contains no elements");
         result.IsFaulted.Should().BeTrue();
@@ -41,7 +44,9 @@ public sealed class HallService_GetHallAsyncTest : IDisposable
             });
         await dbContext.SaveChangesAsync();
         var logger = Substitute.For<ILogger<HallService>>();
-        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger);
+        var localizer = Substitute.For<IStringLocalizer<HallService>>();
+        localizer["ErrorGetting"].Returns(new LocalizedString("ErrorGetting", "Error occured when getting the hall"));
+        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger, localizer);
         var result = await hallViewService.GetHallAsync();
         logger.ReceivedLogError<InvalidOperationException>("Halls contains more than one element");
         result.IsFaulted.Should().BeTrue();
@@ -58,7 +63,9 @@ public sealed class HallService_GetHallAsyncTest : IDisposable
                 Name = "fake hall 1"
             });
         await dbContext.SaveChangesAsync();
-        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), Substitute.For<ILogger<HallService>>());
+        var localizer = Substitute.For<IStringLocalizer<HallService>>();
+        localizer["ErrorGetting"].Returns(new LocalizedString("ErrorGetting", "Error occured when getting the hall"));
+        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), Substitute.For<ILogger<HallService>>(), localizer);
         var result = await hallViewService.GetHallAsync();
         var hall = result.Match(h => h, _ => null);
         hall.Should().BeEquivalentTo(
