@@ -1,14 +1,21 @@
-﻿<RadzenHeader>
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
-        <RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
-        <RadzenLabel Text="Cinema App" Style="margin-right: 5px" />
+﻿@using CinemaBooking.Web.Components.Shared
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<NavMenu> Loc
+
+<RadzenHeader>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Gap="0">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+            <RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
+            <RadzenLabel Text="@Loc["AppName"]" Style="margin-right: 5px" />
+        </RadzenStack>
+        <CultureSelector />
     </RadzenStack>
 </RadzenHeader>
 <RadzenSidebar @bind-Expanded="@sidebar1Expanded">
     <RadzenPanelMenu>
-        <RadzenPanelMenuItem Text="Home" Icon="home" Path="/"/>
-        <RadzenPanelMenuItem Text="Screenings" Icon="@("<i class=\"fa-solid fa-film\"></i>")" Path="/screenings"/>
-        <RadzenPanelMenuItem Text="Add hall" Icon="@("<i class=\"fa-solid fa-tv\"></i>")" Path="/add-hall" />
+        <RadzenPanelMenuItem Text="@Loc["Home"]" Icon="home" Path="/" />
+        <RadzenPanelMenuItem Text="@Loc["Screenings"]" Icon="@("<i class=\"fa-solid fa-film\"></i>")" Path="/screenings" />
+        <RadzenPanelMenuItem Text="@Loc["AddHall"]" Icon="@("<i class=\"fa-solid fa-tv\"></i>")" Path="/add-hall" />
     </RadzenPanelMenu>
 </RadzenSidebar>
 

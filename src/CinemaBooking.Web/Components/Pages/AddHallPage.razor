@@ -3,11 +3,13 @@
 @using CinemaBooking.Web.Dtos.HallPreview
 @using CinemaBooking.Web.Extensions
 @using CinemaBooking.Web.Services.Parsing
+@using Microsoft.Extensions.Localization
 
 @implements IDisposable
 @inject NotificationService NotficationService
 @inject ParseSeatsService SeatsParseService
 @inject DialogService DialogService
+@inject IStringLocalizer<AddHallPage> Loc
 
 <RadzenRow class="h-100" Gap="1rem">
     <RadzenColumn Size="4" class="rz-p-5 d-flex justify-content-center align-items-center">
@@ -15,7 +17,7 @@
             <RadzenStack Gap="1rem" class="w-100">
                 <RadzenRow AlignItems="AlignItems.Center">
                     <RadzenColumn Size="12" SizeMD="4">
-                        <RadzenLabel Text="Hall name" Component="HallName" />
+                        <RadzenLabel Text="@Loc["HallName"]" Component="HallName" />
                     </RadzenColumn>
                     <RadzenColumn Size="12" SizeMD="8">
                         <RadzenTextBox @oninput="(args) => HallNameChanged(args.Value?.ToString())" MaxLength="maxHallNameLength" class="w-100" Name="HallName" />
@@ -23,7 +25,7 @@
                 </RadzenRow>
                 <RadzenRow AlignItems="AlignItems.Center">
                     <RadzenColumn Size="12" SizeMD="4">
-                        <RadzenLabel Text="Delimiter" Component="Delimiter" />
+                        <RadzenLabel Text="@Loc["Delimiter"]" Component="Delimiter" />
                     </RadzenColumn>
                     <RadzenColumn Size="12" SizeMD="8">
                         <RadzenDropDown @bind-Value=@selectedDelimiterKey Data=@SeatsParser.AvailableDelimiters.Keys
@@ -31,11 +33,11 @@
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow AlignItems="AlignItems.Center">
-                    <RadzenLabel Text="File with hall settings" />
+                    <RadzenLabel Text="@Loc["FileWithSettings"]" />
                     <div class="file-container">
                         <label class="custom-file-upload">
                             <InputFile OnChange="LoadHallAsync" accept=".csv" />
-                            Select file
+                            @Loc["SelectFile"]
                         </label>
                         <div class="file-display ps-2 w-100 d-flex align-items-center">
                             @if (selectedFileName is not null)
@@ -47,13 +49,13 @@
                             }
                             else
                             {
-                                <RadzenText>No selected file</RadzenText>
+                                <RadzenText>@Loc["NoFile"]</RadzenText>
                             }
                         </div>
                     </div>
                 </RadzenRow>
-                <RadzenButton Click="ShowHallPreview" Text="Show preview" ButtonStyle="ButtonStyle.Info" class="w-100 mt-3" Disabled="!fileIsSelected" />
-                <RadzenButton Click="SaveHallAsync" Text="Save hall" ButtonStyle="ButtonStyle.Success" class="w-100 mt-3"
+                <RadzenButton Click="ShowHallPreview" Text="@Loc["ShowPreview"]" ButtonStyle="ButtonStyle.Info" class="w-100 mt-3" Disabled="!fileIsSelected" />
+                <RadzenButton Click="SaveHallAsync" Text="@Loc["SaveHall"]" ButtonStyle="ButtonStyle.Success" class="w-100 mt-3"
                               Disabled="!fileIsSelected || hallNameIsEmpty" />
             </RadzenStack>
         </RadzenFieldset>
@@ -87,7 +89,7 @@
             else
             {
                 <div class="d-flex flex-column align-items-center justify-content-center h-100 gap-3">
-                    <RadzenText TextStyle="TextStyle.H2">Hall preview will apear here</RadzenText>
+                    <RadzenText TextStyle="TextStyle.H2">@Loc["HallViewHere"]</RadzenText>
                     <i class="fa-solid fa-tv fa-7x"></i>
                 </div>
             }
@@ -175,12 +177,12 @@
         var file = e.GetMultipleFiles(1).SingleOrDefault();
         if (file is null)
         {
-            NotficationService.NotifyError("Can not proccess this file");
+                NotficationService.NotifyError(Loc["CantProcessFile"]);
             return;
         }
         if (file.ContentType != "text/csv")
         {
-            NotficationService.NotifyError("Uploaded file is not of CSV type");
+            NotficationService.NotifyError(Loc["FileIsNotCSV"]);
             return;
         }
         await SeatsParseService.CopyToTemporaryFileAsync(file);
@@ -211,12 +213,12 @@
     async Task SaveHallAsync()
     {
         var saveHall = await DialogService.Confirm(
-            "Are you sure, you wan't to override current hall setting? All data related to hall (including screenings, and reservations) will be deleted",
-            "Save hall",
+            Loc["SureToOverride"],
+            Loc["SaveHall"],
             new ConfirmOptions
                 {
-                    OkButtonText = "Yes",
-                    CancelButtonText = "No"
+                    OkButtonText = Loc["Yes"],
+                    CancelButtonText = Loc["No"]
                 });
         if (saveHall != true)
         {
@@ -227,11 +229,11 @@
         {
             if (s)
             {
-                NotficationService.NotifySuccess("Succsesfully saved the hall setting.");
+                NotficationService.NotifySuccess(Loc["SuccessfulySaved"]);
             }
             else
             {
-                NotficationService.NotifyError("Failed to save the hall setting.");
+                NotficationService.NotifyError(Loc["FailedToSave"]);
             }
         });
         result.IfFail(e =>

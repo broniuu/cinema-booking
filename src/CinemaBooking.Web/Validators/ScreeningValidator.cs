@@ -1,17 +1,18 @@
 ﻿using CinemaBooking.Web.Db.Entitites;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace CinemaBooking.Web.Validators;
 
 public class ScreeningValidator : AbstractValidator<Screening>
 {
     private readonly TimeProvider _timeProvider;
-    public ScreeningValidator(TimeProvider timeProvider)
+    public ScreeningValidator(TimeProvider timeProvider, IStringLocalizer<ScreeningValidator> localizer)
     {
         _timeProvider = timeProvider;
         RuleFor(s => s.HallId).NotEmpty();
-        RuleFor(s => s.Name).NotEmpty();
-        RuleFor(s => s.Date).Must(IsNow).WithMessage(s => $"Screening date: {s.Date} can't be a past day");
+        RuleFor(s => s.Name).NotEmpty().WithMessage(localizer["NameNotEmpty"]);
+        RuleFor(s => s.Date).Must(IsNow).WithMessage(s => $"{localizer["ScreeningDate"]} {s.Date} {localizer["CantBePast"]}");
         RuleFor(s => s.Id).NotEmpty();
     }
 

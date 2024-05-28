@@ -2,6 +2,7 @@
 using CinemaBooking.Web.Services;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace CinemaBooking.Web.UnitTests.Services;
@@ -62,7 +63,8 @@ public class ScreeningService_GetAllAsyncTest : IDisposable
         await dbContext.SaveChangesAsync();
         var validator = Substitute.For<IValidator<Screening>>();
         var logger = Substitute.For<ILogger<ScreeningService>>();
-        var screeningService = new ScreeningService(SqliteProvider.CreateDbContextFactory(), validator, logger);
+        var localizer = Substitute.For<IStringLocalizer<ScreeningService>>();
+        var screeningService = new ScreeningService(SqliteProvider.CreateDbContextFactory(), validator, logger, localizer);
         var screeningsForView = await screeningService.GetAllAsync();
         screeningsForView.Should().BeEquivalentTo(
             [

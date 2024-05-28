@@ -1,0 +1,42 @@
+﻿@using System.Globalization
+@using Microsoft.Extensions.Localization
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject IStringLocalizer<CultureSelector> Loc
+
+<div class="d-flex align-items-center flex-nowrap ms-3 me-3">
+    <RadzenLabel Text="@Loc["Language"]" Component="DropDownBindValue" Style="margin-right: 8px;" />
+    <RadzenDropDown @bind-Value="@selectedCulture" Change="ApplySelectedCulture" Data=@supportedCultures Style="width: 100%; max-width: 400px;" Name="DropDownBindValue" 
+        TextProperty="DisplayName" />
+</div>
+
+@code
+{
+    private CultureInfo[] supportedCultures = new[]
+    {
+        new CultureInfo("en-US"),
+        new CultureInfo("pl-PL"),
+    };
+
+    private CultureInfo? selectedCulture;
+
+    protected override void OnInitialized()
+    {
+        selectedCulture = CultureInfo.CurrentCulture;
+    }
+
+    private void ApplySelectedCulture()
+    {
+        if (CultureInfo.CurrentCulture != selectedCulture)
+        {
+            var uri = new Uri(Navigation.Uri)
+                .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+            var cultureEscaped = Uri.EscapeDataString(selectedCulture?.Name ?? string.Empty);
+            var uriEscaped = Uri.EscapeDataString(uri);
+
+            Navigation.NavigateTo(
+                $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                forceLoad: true);
+        }
+    }
+}

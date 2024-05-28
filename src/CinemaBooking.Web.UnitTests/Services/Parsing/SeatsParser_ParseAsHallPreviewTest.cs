@@ -1,5 +1,6 @@
 ﻿using CinemaBooking.Web.Services.Parsing;
 using CinemaBooking.Web.UnitTests.TestHelpers;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace CinemaBooking.Web.UnitTests.Services.Parsing;
@@ -24,7 +25,8 @@ public sealed class SeatsParser_ParseAsHallPreviewTest : IDisposable
             """);
         }
         var logger = Substitute.For<ILogger<SeatsParser>>();
-        var sut = new SeatsParser(logger);
+        var localizer = Substitute.For<IStringLocalizer<SeatsParser>>();
+        var sut = new SeatsParser(logger, localizer);
         //When
         var result = sut.ParseAsHallPreview(FakeSourceFileName, ",");
         //Then
@@ -153,12 +155,14 @@ public sealed class SeatsParser_ParseAsHallPreviewTest : IDisposable
     {
         // Given
         var logger = Substitute.For<ILogger<SeatsParser>>();
-        var sut = new SeatsParser(logger);
+        var localizer = Substitute.For<IStringLocalizer<SeatsParser>>();
+        localizer["DelimiterNotValid"].Returns(new LocalizedString("DelimiterNotValid", "Passed delimiter is not valid."));
+        var sut = new SeatsParser(logger, localizer);
         // When
         var result = sut.ParseAsHallPreview(FakeSourceFileName, wrongDelimiter);
         // Then
-        result.ShouldBeFaultedWithMessage("Passed delimiter is not valid");
-        logger.ReceivedLogErrorWithStackTrace("Passed delimiter is not valid");
+        result.ShouldBeFaultedWithMessage("Passed delimiter is not valid.");
+        logger.ReceivedLogErrorWithStackTrace("Passed delimiter is not valid.");
     }
 
     [Theory]
@@ -182,9 +186,11 @@ public sealed class SeatsParser_ParseAsHallPreviewTest : IDisposable
             streamWriter.WriteLine(data);
         }
         var logger = Substitute.For<ILogger<SeatsParser>>();
-        var sut = new SeatsParser(logger);
+        var localizer = Substitute.For<IStringLocalizer<SeatsParser>>();
+        localizer["NotValidData"].Returns(new LocalizedString("NotValidData", "File contains not valid data."));
+        var sut = new SeatsParser(logger, localizer);
         var result = sut.ParseAsHallPreview(FakeSourceFileName, delimiter);
-        result.ShouldBeFaultedWithMessage("File contains not valid data");
+        result.ShouldBeFaultedWithMessage("File contains not valid data.");
         logger.ReceivedLogErrorWithStackTrace($"field contains wrong data: \"{failedField}\"");
     }
 }

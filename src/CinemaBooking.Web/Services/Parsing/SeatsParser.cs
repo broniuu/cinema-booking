@@ -3,9 +3,10 @@ using CinemaBooking.Seed.Exceptions;
 using CinemaBooking.Web.Dtos.HallPreview;
 using Result;
 using Microsoft.VisualBasic.FileIO;
+using Microsoft.Extensions.Localization;
 
 namespace CinemaBooking.Web.Services.Parsing;
-public class SeatsParser(ILogger<SeatsParser> logger)
+public class SeatsParser(ILogger<SeatsParser> logger, IStringLocalizer<SeatsParser> localizer)
 {
     public static readonly Dictionary<string, string> AvailableDelimiters = new()
     {
@@ -15,18 +16,19 @@ public class SeatsParser(ILogger<SeatsParser> logger)
         {"space", " "},
     };
     private readonly ILogger<SeatsParser> _logger = logger;
+    private readonly IStringLocalizer<SeatsParser> _localizer = localizer;
 
     public virtual Result<List<SeatFromParsingDto>?> Parse(string filePath, string delimiter)
     {
         if (!IsValidDelimiter(delimiter))
         {
-            _logger.LogErrorWithStackTrace("Passed delimiter is not valid");
-            return new Result<List<SeatFromParsingDto>?>(new Exception("Passed delimiter is not valid"));
+            _logger.LogErrorWithStackTrace(_localizer["DelimiterNotValid"]);
+            return new Result<List<SeatFromParsingDto>?>(new Exception(_localizer["DelimiterNotValid"]));
         }
         if (!File.Exists(filePath))
         {
             _logger.LogError("Temporary file in {Path} does not exists", filePath);
-            return new Result<List<SeatFromParsingDto>?>(new Exception("Unexpected error occured when parsing seats"));
+            return new Result<List<SeatFromParsingDto>?>(new Exception(_localizer["UnexpectedErrorParsing"]));
         }
         using var parser = new TextFieldParser(filePath);
         parser.TextFieldType = FieldType.Delimited;
@@ -49,7 +51,7 @@ public class SeatsParser(ILogger<SeatsParser> logger)
                 if (!int.TryParse(fieldValidatedForDisabled, out _))
                 {
                     _logger.LogErrorWithStackTrace($"field contains wrong data: \"{field}\"");
-                    return new Result<List<SeatFromParsingDto>?>(new Exception("File contains not valid data"));
+                    return new Result<List<SeatFromParsingDto>?>(new Exception(_localizer["NotValidData"]));
                 }
                 var seat = new SeatFromParsingDto()
                 {
@@ -71,13 +73,13 @@ public class SeatsParser(ILogger<SeatsParser> logger)
     {
         if (!IsValidDelimiter(delimiter))
         {
-            _logger.LogErrorWithStackTrace("Passed delimiter is not valid");
-            return new Result<HallPreview?>(new Exception("Passed delimiter is not valid"));
+            _logger.LogErrorWithStackTrace("Passed delimiter is not valid.");
+            return new Result<HallPreview?>(new Exception(_localizer["DelimiterNotValid"]));
         }
         if (!File.Exists(filePath))
         {
             _logger.LogError("Temporary file in {Path} does not exists", filePath);
-            return new Result<HallPreview?>(new Exception("Unexpected error occured when parsing seats"));
+            return new Result<HallPreview?>(new Exception(_localizer["UnexpectedErrorParsing"]));
         }
         using var parser = new TextFieldParser(filePath);
         parser.TextFieldType = FieldType.Delimited;
@@ -99,7 +101,7 @@ public class SeatsParser(ILogger<SeatsParser> logger)
                 if (!int.TryParse(fieldValidatedForDisabled, out _))
                 {
                     _logger.LogErrorWithStackTrace($"field contains wrong data: \"{field}\"");
-                    return new Result<HallPreview?>(new SeatsParsingException("File contains not valid data"));
+                    return new Result<HallPreview?>(new SeatsParsingException(_localizer["NotValidData"]));
                 }
                 seatsInRow.Add(new SeatPreview(fieldValidatedForDisabled, isForDisabled));
             }

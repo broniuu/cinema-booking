@@ -1,11 +1,13 @@
 ﻿@using CinemaBooking.Web.Db.Entitites
 @using CinemaBooking.Web.Extensions
 @using System.Text.RegularExpressions
+@using Microsoft.Extensions.Localization
 
 @inject ILogger<AddReservationPage> Logger
 @inject DialogService DialogService
 @inject ReservationService ReservationService
 @inject NotificationService NotificationService
+@inject IStringLocalizer<AddReservationPage> Loc
 
 
 <style>
@@ -22,7 +24,7 @@
 @if (unexpectedErrorMessageVisible)
 {
     <RadzenStack JustifyContent="JustifyContent.Center">
-        <RadzenText TextStyle="TextStyle.H6" class="p-5">Unexcpected error occured</RadzenText>
+        <RadzenText TextStyle="TextStyle.H6" class="p-5">@Loc["UnexpectedError"]</RadzenText>
         <RadzenButton Click="() => DialogService.Close(false)" Text="Close" />
     </RadzenStack>
 }
@@ -44,41 +46,41 @@ else
         else if (reservationId != Guid.Empty)
         {
             <div style="width: 400px;" class="mx-auto d-flex justify-content-center">
-                <RadzenButton Click="() => RemoveReservationAsync()" Icon="delete" Text="Remove reservation" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" />
+                <RadzenButton Click="() => RemoveReservationAsync()" Icon="delete" Text="@Loc["RemoveReservation"]" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" />
             </div>
         }
         <RadzenTemplateForm TItem="ReservationFrom" Data=@reservationFrom Submit="SaveReservationAsync">
             <RadzenCard class="my-4 mx-auto" Style="width: 400px;">
-                <RadzenText TextStyle="TextStyle.H6">Seat: @seat.SeatNumber</RadzenText>
-                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Phone number</RadzenText>
+                <RadzenText TextStyle="TextStyle.H6">@Loc["Seat"]: @seat.SeatNumber</RadzenText>
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">@Loc["PhoneNumber"]</RadzenText>
                 <RadzenTextBox Placeholder="+48 000 000 000" Name="Phone" @bind-Value=@reservationFrom.PhoneNumber Change="_ => unsavedChangesExists = true"
                                Style="width: 100%;" aria-label="Phone" />
                 <div style="height: 1px">
-                    <RadzenRequiredValidator Component="Phone" Text="Field can not be empty" />
-                    <RadzenRegexValidator Component="Phone" Text="This is not valid phone number" Pattern="@(@"^\s*\+?\d+(?:\s\d+)*\s*")" />
+                    <RadzenRequiredValidator Component="Phone" Text="@Loc["FieldCantEmpty"]" />
+                    <RadzenRegexValidator Component="Phone" Text="@Loc["NotValidPhone"]" Pattern="@(@"^\s*\+?\d+(?:\s\d+)*\s*")" />
                 </div>
-                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Name</RadzenText>
-                <RadzenTextBox Placeholder="John" Name="Name" @bind-Value=@reservationFrom.Name
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">@Loc["Name"]</RadzenText>
+                <RadzenTextBox Placeholder="@Loc["ExampleName"]" Name="Name" @bind-Value=@reservationFrom.Name
                                Style="width: 100%;" aria-label="Name" Change="_ => unsavedChangesExists = true" />
                 <div style="height: 1px">
-                    <RadzenRequiredValidator Component="Name" Text="Field can not be empty" />
+                    <RadzenRequiredValidator Component="Name" Text="@Loc["FieldCantEmpty"]" />
                 </div>
-                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">Surname</RadzenText>
-                <RadzenTextBox Placeholder="Kowalski" Name="Surname" @bind-Value=@reservationFrom.Surname
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" class="mt-4">@Loc["Surname"]</RadzenText>
+                <RadzenTextBox Placeholder="@Loc["ExampleSurname"]" Name="Surname" @bind-Value=@reservationFrom.Surname
                                Style="width: 100%;" aria-label="Surname" Change="_ => unsavedChangesExists = true" />
                 <div style="height: 1px">
-                    <RadzenRequiredValidator Component="Surname" Text="Field can not be empty" />
+                    <RadzenRequiredValidator Component="Surname" Text="@Loc["FieldCantEmpty"]" />
                 </div>
                 <div class="row">
                     <div class="col-md-12 d-flex align-items-end justify-content-left mt-4">
-                        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Save" />
-                        <RadzenButton ButtonStyle="ButtonStyle.Light" Click="Reset"
-                                      Icon="cancel" style="margin-left: 10px;" Text="Reset" />
+                        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="@Loc["Save"]" />
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" ButtonType="ButtonType.Reset"
+                                      Icon="cancel" style="margin-left: 10px;" Text="@Loc["Reset"]" Click="Reset" />
                     </div>
                 </div>
             </RadzenCard>
         </RadzenTemplateForm>
-        <RadzenButton Click="CloseDialogAsync" ButtonStyle="ButtonStyle.Danger" Text="Close" />
+        <RadzenButton Click="CloseDialogAsync" ButtonStyle="ButtonStyle.Danger" Text="@Loc["Close"]" />
     </div>
 }
 
@@ -138,8 +140,8 @@ else
             };
         var addingNewScreening = reservationId == Guid.Empty;
         var (saveReservationResult, successMessage) = addingNewScreening ?
-            (await ReservationService.AddAsync(reservation), "Successfuly added screening") :
-            (await ReservationService.UpdateAsync(reservation), "Successfuly updated screening");
+            (await ReservationService.AddAsync(reservation), Loc["AddReservationSucceess"]) :
+            (await ReservationService.UpdateAsync(reservation), Loc["UpdateReservationSuccess"]);
         var savedReservation = saveReservationResult.IfFail(
             e =>
             {
@@ -172,9 +174,9 @@ else
     async Task RemoveReservationAsync()
     {
         var removeReservation = await DialogService.Confirm(
-            "Are you sure to remove this reservation",
-            "Removing reservation",
-            new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+            Loc["SureToRemoveReservation"],
+            Loc["RemovingReservation"],
+            new ConfirmOptions() { OkButtonText = Loc["Yes"], CancelButtonText = Loc["No"] });
         if (removeReservation == false)
         {
             return;
@@ -202,9 +204,9 @@ else
             return;
         }
         var closeDialogConfirmation = await DialogService.Confirm(
-            "Are you sure to exit without saving changes",
-            "Exiting",
-            new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+            Loc["SureToExitWithoutSaving"],
+            Loc["Exiting"],
+            new ConfirmOptions() { OkButtonText = Loc["Yes"], CancelButtonText = Loc["No"] });
         if (closeDialogConfirmation == true)
         {
             DialogService.Close(reservationModified);

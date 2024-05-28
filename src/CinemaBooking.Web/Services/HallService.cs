@@ -4,17 +4,19 @@ using CinemaBooking.Web.Dtos;
 using CinemaBooking.Web.Mappers;
 using Result;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace CinemaBooking.Web.Services;
 
-public class HallService(IDbContextFactory<CinemaDbContext> dbContextFactory, ILogger<HallService> logger)
+public class HallService(IDbContextFactory<CinemaDbContext> dbContextFactory, ILogger<HallService> logger, IStringLocalizer<HallService> localizer)
 {
     private readonly IDbContextFactory<CinemaDbContext> _dbContextFactory = dbContextFactory;
     private readonly ILogger<HallService> _logger = logger;
+    private readonly IStringLocalizer<HallService> _localizer = localizer;
 
     public async Task<Result<HallForView?>> GetHallViewAsync(Guid screeningId)
     {
-        var exceptionMessage = "Error occured when getting the hall";
+        var exceptionMessage = _localizer["ErrorGetting"];
         try
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
@@ -38,7 +40,7 @@ public class HallService(IDbContextFactory<CinemaDbContext> dbContextFactory, IL
 
     public async Task<Result<Hall?>> GetHallAsync()
     {
-        var exceptionMessage = "Error occured when getting the hall";
+        var exceptionMessage = _localizer["ErrorGetting"];
         try
         {
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync();

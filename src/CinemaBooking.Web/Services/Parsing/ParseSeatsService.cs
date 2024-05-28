@@ -5,6 +5,7 @@ using CinemaBooking.Web.Mappers;
 using Result;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace CinemaBooking.Web.Services.Parsing;
 
@@ -13,14 +14,15 @@ public sealed class ParseSeatsService(
     ILogger<ParseSeatsService> logger,
     SeatsParser seatsParser,
     AppDataService appDataService,
-    GuidService guidService) : IDisposable
+    GuidService guidService,
+    IStringLocalizer<ParseSeatsService> localizer) : IDisposable
 {
     private readonly IDbContextFactory<CinemaDbContext> _dbContextFactory = dbContextFactory;
     private readonly ILogger<ParseSeatsService> _logger = logger;
     private readonly SeatsParser _seatsParser = seatsParser;
     private readonly AppDataService _appDataService = appDataService;
     private readonly GuidService _guidService = guidService;
-
+    private readonly IStringLocalizer<ParseSeatsService> _localizer = localizer;
     private string? _temporaryHallFilePath;
     private const long MaxFileSize = 1024 * 15;
 
@@ -28,8 +30,8 @@ public sealed class ParseSeatsService(
     {
         if (_temporaryHallFilePath is null)
         {
-            _logger.LogErrorWithStackTrace("Temporary file does not exists");
-            return new Result<HallPreview?>(new Exception("Unexpected error occured when parsing seats"));
+            _logger.LogErrorWithStackTrace(_localizer["TempNotExcists"]);
+            return new Result<HallPreview?>(new Exception(_localizer["UnexpectedErrorParsing"]));
         }
         return _seatsParser.ParseAsHallPreview(_temporaryHallFilePath, delimiter);
     }
@@ -50,7 +52,7 @@ public sealed class ParseSeatsService(
             File.Delete(_temporaryHallFilePath);
             _temporaryHallFilePath = null;
             _logger.LogError(ex);
-            return new Result<bool>(new Exception("Unexpected error occured when coping seats"));
+            return new Result<bool>(new Exception(_localizer["UnexpectedErrorCoping"]));
         }
     }
 
@@ -58,8 +60,8 @@ public sealed class ParseSeatsService(
     {
         if (!File.Exists(_temporaryHallFilePath))
         {
-            _logger.LogErrorWithStackTrace("Temporary file does not exists");
-            return new Result<bool>(new Exception("Unexpected error occured when saving seats"));
+            _logger.LogErrorWithStackTrace(_localizer["TempNotExists"]);
+            return new Result<bool>(new Exception(_localizer["UnexpectedErrorSaving"]));
         }
         return await _seatsParser.Parse(_temporaryHallFilePath, delimiter).MapAsync(async seatsFromParsing =>
         {
@@ -81,7 +83,7 @@ public sealed class ParseSeatsService(
             catch (Exception ex)
             {
                 _logger.LogError(ex);
-                return new Result<bool>(new Exception("Unexpected error occured when saving seats"));
+                return new Result<bool>(new Exception(_localizer["UnexpectedErrorSaving"]));
             }
         });
     }

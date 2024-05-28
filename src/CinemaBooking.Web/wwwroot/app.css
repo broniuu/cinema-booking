@@ -71,3 +71,20 @@ h1:focus {
 .rz-dropdown-item {
     color: var(--rz-text-color);
 }
+
+blockquote {
+    margin: 0;
+    padding-left: 1.4rem;
+    position: relative;
+    color: var(--rz-text-tertiary-color)
+}
+
+blockquote::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #dadada;
+    border-radius: 2px / 4px;
+}

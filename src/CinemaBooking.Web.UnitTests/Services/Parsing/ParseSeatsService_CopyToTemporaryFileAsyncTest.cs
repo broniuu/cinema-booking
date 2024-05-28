@@ -4,6 +4,7 @@ using CinemaBooking.Web.Services.Parsing;
 using CinemaBooking.Web.UnitTests.TestHelpers;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using NSubstitute.ExceptionExtensions;
 
@@ -29,8 +30,8 @@ public class ParseSeatsService_CopyToTemporaryFileAsyncTest
         using var stream = fakeTextToCopy.ToStream();
         var fakeBrowserFile = Substitute.For<IBrowserFile>();
         fakeBrowserFile.OpenReadStream(MaxFileSize).Returns(stream);
-
-        var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService);
+        var localizer = GetLocalizerMock();
+        var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService, localizer);
         var result = await sut.CopyToTemporaryFileAsync(fakeBrowserFile);
         
         result.IsSuccess.Should().BeTrue();
@@ -52,8 +53,9 @@ public class ParseSeatsService_CopyToTemporaryFileAsyncTest
         guidService.NewGuid().Returns(Guid.Parse("b122c68b-2b4b-434f-9c96-3493dfcdf309"));
         var fakeBrowserFile = Substitute.For<IBrowserFile>();
         fakeBrowserFile.OpenReadStream(MaxFileSize).Throws(new Exception("fake error"));
-        var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService);
-
+        var localizer = GetLocalizerMock();
+        localizer["UnexpectedErrorCoping"].Returns(new LocalizedString("UnexpectedErrorCoping", "Unexpected error occured when coping seats"));
+        var sut = new ParseSeatsService(dbContextFactory, logger, seatsParser, appDataService, guidService, localizer);
         var result = await sut.CopyToTemporaryFileAsync(fakeBrowserFile);
         result.ShouldBeFaultedWithMessage("Unexpected error occured when coping seats");
         logger.ReceivedLogError(new Exception("fake error"));
@@ -61,9 +63,10 @@ public class ParseSeatsService_CopyToTemporaryFileAsyncTest
     }
 
 
-    private static SeatsParser GetParserMock() => Substitute.For<SeatsParser>(Substitute.For<ILogger<SeatsParser>>());
+    private static SeatsParser GetParserMock() => Substitute.For<SeatsParser>(Substitute.For<ILogger<SeatsParser>>(), Substitute.For<IStringLocalizer<SeatsParser>>());
     private static ILogger<ParseSeatsService> GetLoggerMock() => Substitute.For<ILogger<ParseSeatsService>>();
     private static IDbContextFactory<CinemaDbContext> GetDbContextFactoryMock() => Substitute.For<IDbContextFactory<CinemaDbContext>>();
     private static AppDataService GetAppDataServiceMock() => Substitute.For<AppDataService>();
     private static GuidService GetGuidServiceMock() => Substitute.For<GuidService>();
+    private static IStringLocalizer<ParseSeatsService> GetLocalizerMock() => Substitute.For<IStringLocalizer<ParseSeatsService>>();
 }

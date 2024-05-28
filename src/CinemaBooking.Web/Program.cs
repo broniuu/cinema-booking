@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Text;
 using CinemaBooking.Web;
 using CinemaBooking.Web.Components;
 using CinemaBooking.Web.Db;
@@ -10,8 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
+// Register special encoding
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 // Add services to the container.
+builder.Services.AddLocalization()
+    .AddControllers();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddCinemaManagementServices()
@@ -20,6 +25,12 @@ builder.Services.AddCinemaManagementServices()
     .AddValidators()
     .AddDbContextFactory();
 var app = builder.Build();
+
+var supportedCultures = new[] { "en-US", "pl-PL"};
+
+app.UseRequestLocalization(new RequestLocalizationOptions()
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures));
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -44,5 +55,7 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapControllers();
 
 app.Run();
