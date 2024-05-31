@@ -112,7 +112,7 @@
 
     async Task RemoveScreening(Screening screeningToRemove)
     {
-        var deleteScreening = await DialogService.Confirm(Loc["SuretoDelete"], Loc["Delete"]);
+        var deleteScreening = await DialogService.Confirm(Loc["SureToDelete"], Loc["Delete"]);
         if (deleteScreening == false)
         {
             return;
