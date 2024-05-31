@@ -44,7 +44,7 @@ app.CreateAppDataDirectories();
 await app.MigrateDbAsync();
 if (app.Environment.IsDevelopment())
 {
-    await app.FillInDatabaseAsync(app.Logger);
+    //await app.FillInDatabaseAsync(app.Logger);
 }
 
 
