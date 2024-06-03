@@ -17,6 +17,8 @@ RUN dotnet publish "./CinemaBooking.Web.csproj" -c $BUILD_CONFIGURATION -o /app/
 
 FROM base AS final
 WORKDIR /app
+COPY ["instruction.md", "."]
+COPY ["instruction.pl.md", "."]
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "CinemaBooking.Web.dll"]
 
