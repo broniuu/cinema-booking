@@ -1,11 +1,18 @@
 # Cinema Booking
 
-Simple app to manage cinema screenings.
+Simple app to manage cinema screenings. App has Polish and English translation.
 
 ## Runing app
 
 1. Run `dotnet run` or `dotnet watch run` command in `CinemaBooking.Web` directory.
 1. Go to <https://localhost:7049/> in browser.
+
+## Running app in container
+
+1. Go to `/src/CinemaBooking.Web` directory.
+1. Run `docker build -t cinema-booking-management .`.
+1. Run	`docker run -it -p 8080:8080 --name cinema-booking cinema-booking-management`.
+1. Go to <http://localhost:8080/> in browser.
 
 ## Hall file rules
 
