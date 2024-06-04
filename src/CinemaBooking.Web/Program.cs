@@ -3,6 +3,9 @@ using System.Text;
 using CinemaBooking.Web;
 using CinemaBooking.Web.Components;
 using CinemaBooking.Web.Db;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Radzen;
 
 [assembly: InternalsVisibleTo("CinemaBooking.Web.UnitTests")]
@@ -24,6 +27,13 @@ builder.Services.AddCinemaManagementServices()
     .AddSingleton(TimeProvider.System)
     .AddValidators()
     .AddDbContextFactory();
+builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(@"C:\temp-keys\"))
+                .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration()
+                {
+                    EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+                    ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+                });
+
 var app = builder.Build();
 
 var supportedCultures = new[] { "en-US", "pl-PL"};
