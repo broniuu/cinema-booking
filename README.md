@@ -11,8 +11,13 @@ Simple app to manage cinema screenings. App has Polish and English translation.
 
 1. Go to `/src/CinemaBooking.Web` directory.
 1. Run `docker build -t cinema-booking-management .`.
-1. Run	`docker run -it -p 8080:8080 --name cinema-booking cinema-booking-management`.
+1. Run	`docker compose up`.
 1. Go to <http://localhost:8080/> in browser.
+
+### Helpful docker scripts
+
+- Save docker image: `docker save --output cinema.tar cinema`
+- Load docker image: `docker load --input cinema.tar`
 
 ## Hall file rules
 
