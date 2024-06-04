@@ -23,34 +23,31 @@
     else
     {
         <div class="d-flex flex-column hall-view">
-            <div class="pt-2 hall-name">
-                <div class="d-flex justify-content-center">
-                    <RadzenText TextStyle="TextStyle.H2">@Loc["Hall"]: @hallForView?.Name</RadzenText>
-                </div>
-                <div class="d-flex justify-content-center">
-                    <RadzenText TextStyle="TextStyle.H3">@Loc["Screening"]: @Screening?.Name</RadzenText>
-                </div>
+            <div class="hall-name">
+                <RadzenText Style="color: var(--rz-series-8)" TextStyle="TextStyle.H3">@Loc["Hall"]: @hallForView?.Name</RadzenText>
+                <RadzenText Style="color: var(--rz-series-8)" TextStyle="TextStyle.H3">@Loc["Screening"]: @Screening?.Name</RadzenText>
             </div>
-
-            <div class="d-flex justify-content-center align-items-center hall-display">
-                <div class="d-flex flex-column gap-1" style="width: fit-content">
-                    @foreach (var seatRow in hallForView?.SeatsRows ?? [])
-                    {
-                        <div class="d-flex flex-row gap-1">
-                            @foreach (var seat in seatRow.Seats)
-                            {
-                                <div class="@GetClassForSeat(seat)" @onclick="() => OpenReservationDialogAsync(seat)">
-                                    <RadzenText TextStyle="TextStyle.H6" Style="color: white;">@seat.SeatNumber</RadzenText>
-                                    <div>
-                                        @if (seat.IsForDisabled)
-                                        {
-                                            <i class="fa-solid fa-wheelchair"></i>
-                                        }
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="hall-display">
+                    <div class="d-flex flex-column gap-1" style="width: fit-content">
+                        @foreach (var seatRow in hallForView?.SeatsRows ?? [])
+                        {
+                            <div class="d-flex flex-row gap-1">
+                                @foreach (var seat in seatRow.Seats)
+                                {
+                                    <div class="@GetClassForSeat(seat)" @onclick="() => OpenReservationDialogAsync(seat)">
+                                        <RadzenText TextStyle="TextStyle.H6" Style="color: white;">@seat.SeatNumber</RadzenText>
+                                        <div>
+                                            @if (seat.IsForDisabled)
+                                            {
+                                                <i class="fa-solid fa-wheelchair"></i>
+                                            }
+                                        </div>
                                     </div>
-                                </div>
-                            }
-                        </div>
-                    }
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
@@ -59,16 +56,33 @@
 
 
 <style>
+    :root {
+    }
+
     .hall-view {
-        max-height: calc(var(--body-height) - var(--rz-layout-body-padding) * 2 - var(--rz-card-padding) * 2);
+        --hall-view-size: calc(var(--body-height) - var(--rz-layout-body-padding) * 2 - var(--rz-card-padding) * 2);
+        --screening-props-size: 4rem;
+        --hall-display-size: calc(var(--hall-view-size) - var(--screening-props-size));
+        height: var(--hall-view-size);
     }
 
     .hall-name {
-        flex: 0 1 auto;
+        height: var(--screening-props-size);
+        display: flex;
+        justify-content: space-between;
+        align-content: center;
+        margin-inline: 2rem
+    }
+
+    .hall-prop {
+        border: 2px solid var(--rz-color-primary-darker);
+        border-radius: 1rem;
+        width: fit-content;
     }
 
     .hall-display {
-        flex: 1 1 auto;
+        max-height: var(--hall-display-size);
+        display: flex;
         overflow: auto;
     }
 </style>
