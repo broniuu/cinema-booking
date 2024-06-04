@@ -117,25 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddScreening" xml:space="preserve">
-    <value>Dodaj seans</value>
+  <data name="Delete" xml:space="preserve">
+    <value>Usuwanie seansu</value>
   </data>
-  <data name="AddScreeningSuccess" xml:space="preserve">
-    <value>Pomyślnie dodano seans</value>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Pomyślnie usunięteo seans</value>
   </data>
-  <data name="Cancel" xml:space="preserve">
-    <value>Anuluj</value>
+  <data name="NoHallContent1" xml:space="preserve">
+    <value>Kliknij</value>
   </data>
-  <data name="DateScreening" xml:space="preserve">
-    <value>Data</value>
+  <data name="NoHallContent2" xml:space="preserve">
+    <value>tutaj</value>
   </data>
-  <data name="Error" xml:space="preserve">
-    <value>Błąd!</value>
+  <data name="NoHallContent3" xml:space="preserve">
+    <value>aby dodać salę</value>
   </data>
-  <data name="NameScreening" xml:space="preserve">
-    <value>Tytuł</value>
+  <data name="NoHallTitle" xml:space="preserve">
+    <value>Musisz dodać salę, aby móc zarządzać seansami</value>
   </data>
-  <data name="Submit" xml:space="preserve">
-    <value>Dodaj</value>
+  <data name="SureToDelete" xml:space="preserve">
+    <value>Czy jesteś pewny że chcesz usunąć ten seans?</value>
   </data>
 </root>

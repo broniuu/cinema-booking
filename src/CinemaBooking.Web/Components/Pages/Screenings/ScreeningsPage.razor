@@ -1,42 +1,61 @@
 ﻿@page "/screenings"
 @using CinemaBooking.Web.Db.Entitites
 @using CinemaBooking.Web.Extensions
+@using Microsoft.Extensions.Localization
 @inject ScreeningService ScreeningService
 @inject DialogService DialogService
 @inject NotificationService NotificationService
+@inject HallService HallService
+@inject IStringLocalizer<ScreeningsPage> Loc
 
-<RadzenRow Style="height: 100%;">
-    <RadzenColumn Size="3">
-        <RadzenCard class="p-0 pb-2 screening-management">
-            <div class="add-screening">
-                <AddScreeningPage OnSaveScreening="HandleAddScreening" />
-            </div>
-            <RadzenDataList Data="@screenings" Class="screening-list" WrapItems>
-                <Template Context="screening">
-                    <RadzenCard Style="width: 100%; padding: 0;">
-                        <RadzenRow Gap="0">
-                            <RadzenColumn Size="10" Class="@ChooseClassForScreening(screening)" @onclick="() => ChooseScreening(screening)">
-                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-color-secondary">@(screening.Name)</RadzenText>
-                                <RadzenText TextStyle="TextStyle.Body1" TagName="TagName.H6" class="rz-color-secondary">@(screening.Date)</RadzenText>
-                            </RadzenColumn>
-                            <RadzenColumn Class="rz-ripple remove-screening" @onclick="() => RemoveScreening(screening)">
-                                <div class="h-100 d-flex justify-content-center align-items-center">
-                                    <RadzenIcon Style="color: white;" Icon="@("<i class=\"fa-solid fa-trash\"></i>")" />
-                                </div>
-                            </RadzenColumn>
-                        </RadzenRow>
-                    </RadzenCard>
-                </Template>
-            </RadzenDataList>
-        </RadzenCard>
-    </RadzenColumn>
+@if(hallExists == false)
+{
+    <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: 100%">
+        <RadzenRow>
+            <RadzenText TextStyle="TextStyle.H1">@Loc["NoHallTitle"]</RadzenText>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenText TextStyle="TextStyle.H2">@Loc["NoHallContent1"]<RadzenLink Path="add-hall" Text="@Loc["NoHallContent2"]" />@Loc["NoHallContent3"]</RadzenText>
+        </RadzenRow>
+    </RadzenStack>
+    
+} else
+{
+    <RadzenRow Style="height: 100%;">
+        <RadzenColumn Size="3">
+            <RadzenCard class="p-0 pb-2 screening-management">
+                <div class="add-screening">
+                    <AddScreeningPage OnSaveScreening="HandleAddScreening" />
+                </div>
+                <RadzenDataList Data="@screenings" Class="screening-list" WrapItems>
+                    <Template Context="screening">
+                        <RadzenCard Style="width: 100%; padding: 0;">
+                            <RadzenRow Gap="0">
+                                <RadzenColumn Size="10" Class="@ChooseClassForScreening(screening)" @onclick="() => ChooseScreening(screening)">
+                                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-color-secondary">@(screening.Name)</RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Body1" TagName="TagName.H6" class="rz-color-secondary">@(screening.Date)</RadzenText>
+                                </RadzenColumn>
+                                <RadzenColumn Class="rz-ripple remove-screening" @onclick="() => RemoveScreening(screening)">
+                                    <div class="h-100 d-flex justify-content-center align-items-center">
+                                        <RadzenIcon Style="color: white;" Icon="@("<i class=\"fa-solid fa-trash\"></i>")" />
+                                    </div>
+                                </RadzenColumn>
+                            </RadzenRow>
+                        </RadzenCard>
+                    </Template>
+                </RadzenDataList>
+            </RadzenCard>
+        </RadzenColumn>
 
-    <RadzenColumn Size="9">
-        <RadzenCard Style="height: 100%;">
-            <HallPage Screening=choosenScreening />
-        </RadzenCard>
-    </RadzenColumn>
-</RadzenRow>
+        <RadzenColumn Size="9">
+            <RadzenCard Style="height: 100%;">
+                <HallPage Screening=choosenScreening />
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+}
+
+
 
 <style>
     .screening-management {
@@ -69,10 +88,14 @@
 @code {
     List<Screening>? screenings;
     Screening? choosenScreening;
+    bool? hallExists;
 
     protected override async Task OnInitializedAsync()
     {
         screenings = await ScreeningService.GetAllAsync();
+        var hallResult = await HallService.GetHallAsync();
+        hallResult.IfFail(_ => hallExists = false);
+        hallResult.IfSucc(h => hallExists = h is not null);
     }
 
     async Task HandleAddScreening(bool addScreeningScuccess)
@@ -86,14 +109,14 @@
 
     async Task RemoveScreening(Screening screeningToRemove)
     {
-        var deleteScreening = await DialogService.Confirm("Are you sure, you wan't do delete this screening", "Delete Screening");
+        var deleteScreening = await DialogService.Confirm(Loc["SureToDelete"], Loc["Delete"]);
         if (deleteScreening == false)
         {
             return;
         }
         await ScreeningService.RemoveAsync(screeningToRemove);
         screenings?.Remove(screeningToRemove);
-        NotificationService.NotifySuccess("Deleted screening successfuly");
+        NotificationService.NotifySuccess(Loc["DeleteSuccess"]);
     }
 
     void ChooseScreening(Screening screening)

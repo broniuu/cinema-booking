@@ -1,0 +1,7 @@
+﻿services:
+ app:
+  image: cinema-booking-management
+  ports: 
+   - "8080:8080"
+  volumes:
+   - /c/temp-keys:/root/.aspnet/DataProtection-Keys

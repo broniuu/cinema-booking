@@ -117,25 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Delete" xml:space="preserve">
-    <value>Delete Screening</value>
+  <data name="AddScreening" xml:space="preserve">
+    <value>Add screening</value>
   </data>
-  <data name="DeleteSuccess" xml:space="preserve">
-    <value>Deleted screening successfuly</value>
+  <data name="AddScreeningSuccess" xml:space="preserve">
+    <value>Succsfully added screening.</value>
   </data>
-  <data name="NoHallContent1" xml:space="preserve">
-    <value>Click</value>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
   </data>
-  <data name="NoHallContent2" xml:space="preserve">
-    <value>here</value>
+  <data name="DateScreening" xml:space="preserve">
+    <value>Date</value>
   </data>
-  <data name="NoHallContent3" xml:space="preserve">
-    <value>to add hal</value>
+  <data name="Error" xml:space="preserve">
+    <value>Error!</value>
   </data>
-  <data name="NoHallTitle" xml:space="preserve">
-    <value>You need to add hall to manage screenings</value>
+  <data name="NameScreening" xml:space="preserve">
+    <value>Title</value>
   </data>
-  <data name="SureToDelete" xml:space="preserve">
-    <value>Are you sure, you wan't do delete this screening?</value>
+  <data name="Submit" xml:space="preserve">
+    <value>Submit</value>
   </data>
 </root>

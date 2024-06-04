@@ -20,5 +20,5 @@
         var markdownInstruction = await File.ReadAllTextAsync(fileName, Encoding.GetEncoding(windows1250CodePage));
         instructionMarkup = Markdown.ToHtml(markdownInstruction, pipeline);
     }
-    
+
 }

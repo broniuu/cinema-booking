@@ -23,8 +23,7 @@ public class HallService(IDbContextFactory<CinemaDbContext> dbContextFactory, IL
             var hall = await dbContext.Halls.SingleOrDefaultAsync(); // DB should contain only one hall
             if (hall is null)
             {
-                _logger.LogErrorWithStackTrace("Halls contains no elements");
-                return new Result<HallForView?>(new Exception(exceptionMessage));
+                return new Result<HallForView?>((HallForView?)null);
             }
             var seatsByRow = await dbContext.Seats.Include(s => s.Reservations).Where(s => s.HallId == hall.Id).GroupBy(s => s.PositionY).ToListAsync();
             var rowsForView = seatsByRow.Select(r => new SeatsRowForView([.. r.OrderBy(s => s.PositionX).Select(s => s.CreateForView(screeningId))]));
@@ -47,8 +46,7 @@ public class HallService(IDbContextFactory<CinemaDbContext> dbContextFactory, IL
             var hall = await dbContext.Halls.SingleOrDefaultAsync(); // DB should contain only one hall
             if (hall is null)
             {
-                _logger.LogErrorWithStackTrace("Halls contains no elements");
-                return new Result<Hall?>(new Exception(exceptionMessage));
+                return new Result<Hall?>((Hall?)null);
             }
             return hall;
         } catch (InvalidOperationException ex)

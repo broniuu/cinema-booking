@@ -16,18 +16,6 @@ public sealed class HallService_GetHallAsyncTest : IDisposable
     }
 
     [Fact]
-    public async Task WhenHallNotExists_ThenReturnFaulted()
-    {
-        var logger = Substitute.For<ILogger<HallService>>();
-        var localizer = Substitute.For<IStringLocalizer<HallService>>();
-        localizer["ErrorGetting"].Returns(new LocalizedString("ErrorGetting", "Error occured when getting the hall"));
-        var hallViewService = new HallService(_sqliteProvider.CreateDbContextFactory(), logger, localizer);
-        var result = await hallViewService.GetHallAsync();
-        logger.ReceivedLogErrorWithStackTrace("Halls contains no elements");
-        result.IsFaulted.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task WhenMoreThanOneHallExists_ThenReturnFaulted()
     {
         await using var dbContext = _sqliteProvider.CreateDbContext();
