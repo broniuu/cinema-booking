@@ -16,7 +16,7 @@ Simple app to manage cinema screenings. App has Polish and English translation.
 
 ### Helpful docker scripts
 
-- Save docker image: `docker save --output cinema.tar cinema`
+- Save docker image: `docker save --output cinema.tar cinema-booking-management`
 - Load docker image: `docker load --input cinema.tar`
 
 ## Hall file rules
