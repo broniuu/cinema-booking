@@ -132,6 +132,9 @@
   <data name="FileWithSettings" xml:space="preserve">
     <value>File with hall settings</value>
   </data>
+  <data name="HallInfo" xml:space="preserve">
+    <value>Hall Info</value>
+  </data>
   <data name="HallName" xml:space="preserve">
     <value>Hall name</value>
   </data>

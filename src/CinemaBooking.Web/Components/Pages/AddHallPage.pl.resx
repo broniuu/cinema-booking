@@ -132,6 +132,9 @@
   <data name="FileWithSettings" xml:space="preserve">
     <value>Plik z ustawieniem sali</value>
   </data>
+  <data name="HallInfo" xml:space="preserve">
+    <value>Informacje o sali</value>
+  </data>
   <data name="HallName" xml:space="preserve">
     <value>Nazwa sali</value>
   </data>
